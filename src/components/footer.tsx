@@ -22,7 +22,7 @@ export function Footer() {
           </div>
           
           <p className="text-xs text-muted-foreground">
-            © 2024 Thread Extractor. This tool is not affiliated with Meta or Threads.
+            © 2025 Thread Extractor. This tool is not affiliated with Meta or Threads.
           </p>
         </div>
       </div>

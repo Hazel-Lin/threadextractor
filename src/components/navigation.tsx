@@ -3,7 +3,7 @@
 import { useState } from "react"
 import { Button } from "@/components/ui/button"
 import { Menu, X } from "lucide-react"
-import { ThemeToggle } from "@/components/theme-toggle"
+import { Logo } from "@/components/logo"
 
 export function Navigation() {
   const [isMenuOpen, setIsMenuOpen] = useState(false)
@@ -28,13 +28,11 @@ export function Navigation() {
           {/* Logo */}
           <button
             onClick={() => scrollToSection('home')}
-            className="flex items-center space-x-2 text-foreground hover:opacity-80 transition-opacity"
+            className="flex items-center space-x-2 text-foreground hover:text-primary transition-colors"
           >
-            <div className="w-8 h-8 bg-foreground rounded-lg flex items-center justify-center">
-              <div className="w-4 h-4 bg-background rounded-sm"></div>
-            </div>
+            <Logo className="w-8 h-8" />
             <span className="text-lg font-medium">
-              threadster
+              Thread Extractor
             </span>
           </button>
 
@@ -42,27 +40,25 @@ export function Navigation() {
           <div className="hidden md:flex items-center space-x-8">
             <button
               onClick={() => scrollToSection('home')}
-              className="text-sm text-primary hover:text-primary/80 transition-colors font-medium"
+              className="text-sm text-primary hover:text-primary/80 transition-colors font-medium px-2 py-1 rounded-md hover:bg-primary/10"
             >
               Home
             </button>
             <button
               onClick={() => scrollToSection('help')}
-              className="text-sm text-muted-foreground hover:text-foreground transition-colors font-medium"
+              className="text-sm text-muted-foreground hover:text-foreground transition-colors font-medium px-2 py-1 rounded-md hover:bg-accent"
             >
               How to use
             </button>
-            <ThemeToggle />
           </div>
 
           {/* Mobile Menu Button */}
           <div className="md:hidden flex items-center space-x-2">
-            <ThemeToggle />
             <Button
               variant="ghost"
               size="sm"
               onClick={toggleMenu}
-              className="h-9 w-9 p-0"
+              className="h-9 w-9 p-0 text-muted-foreground hover:text-foreground hover:bg-accent"
             >
               {isMenuOpen ? <X className="h-4 w-4" /> : <Menu className="h-4 w-4" />}
             </Button>
@@ -75,13 +71,13 @@ export function Navigation() {
             <div className="flex flex-col space-y-4">
               <button
                 onClick={() => scrollToSection('home')}
-                className="text-left text-sm text-primary hover:text-primary/80 transition-colors font-medium py-2"
+                className="text-left text-sm text-primary hover:text-primary/80 transition-colors font-medium py-2 px-2 rounded-md hover:bg-primary/10"
               >
                 Home
               </button>
               <button
                 onClick={() => scrollToSection('help')}
-                className="text-left text-sm text-muted-foreground hover:text-foreground transition-colors font-medium py-2"
+                className="text-left text-sm text-muted-foreground hover:text-foreground transition-colors font-medium py-2 px-2 rounded-md hover:bg-accent"
               >
                 How to use
               </button>

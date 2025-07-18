@@ -2,7 +2,7 @@ export function HelpSection() {
   return (
     <div className="bg-background py-4 w-full h-full">
       <div className="max-w-4xl mx-auto px-4 text-center">
-        <h2 className="text-xl font-bold text-foreground mb-4">
+        <h2 className="text-3xl font-bold text-foreground mb-6">
           How to use
         </h2>
         

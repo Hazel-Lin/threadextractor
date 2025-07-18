@@ -34,7 +34,7 @@ export default function ThreadsExtractor() {
       } else {
         setError(result.message)
       }
-    } catch (err) {
+    } catch {
       setError("提取过程中出现错误，请重试")
     } finally {
       setIsLoading(false)
@@ -46,7 +46,7 @@ export default function ThreadsExtractor() {
       await navigator.clipboard.writeText(text)
       setSuccess("链接已复制到剪贴板")
       setTimeout(() => setSuccess(""), 3000)
-    } catch (err) {
+    } catch {
       setError("复制失败，请手动复制")
     }
   }
@@ -68,15 +68,15 @@ export default function ThreadsExtractor() {
 
   return (
     <div className="bg-background w-full h-full flex items-center justify-center">
-      <div className="max-w-4xl mx-auto px-4 w-full">
-        <div className="text-center space-y-4">
+      <div className="max-w-6xl mx-auto px-4 w-full">
+        <div className="text-center space-y-6">
           {/* Header */}
           <div className="space-y-2">
             <h1 className="text-3xl sm:text-4xl font-bold text-foreground">
               <span className="text-primary">Threads</span> Video Downloader
             </h1>
             <p className="text-base text-muted-foreground">
-              Download videos from Threads with ease.
+              Easily download videos from Threads platform.
             </p>
           </div>
 
@@ -85,23 +85,23 @@ export default function ThreadsExtractor() {
             <form onSubmit={handleSubmit} className="flex flex-col sm:flex-row gap-3">
               <Input
                 type="url"
-                placeholder="Enter a Threads Link e.g. https://www.threads.net/@username/post/CwLZqgOPqT"
+                placeholder="Enter a Threads Link"
                 value={url}
                 onChange={(e) => setUrl(e.target.value)}
                 disabled={isLoading}
-                className="flex-1 h-12 px-4 text-base border-2 border-border focus:border-primary text-foreground placeholder:text-muted-foreground"
+                className="flex-1 h-12 px-4 text-base border-2 border-border focus:border-primary text-foreground placeholder:text-placeholder"
               />
-              <Button 
+                <Button 
                 type="submit" 
-                className="h-12 px-8 bg-primary hover:bg-primary/90 text-primary-foreground font-medium sm:flex-shrink-0" 
+                className="h-12 px-8 bg-primary hover:bg-primary/90 text-primary-foreground font-bold sm:flex-shrink-0" 
                 disabled={isLoading}
-              >
+                >
                 {isLoading ? (
                   <Loader2 className="h-4 w-4 animate-spin" />
                 ) : (
-                  "Download"
+                  <span className="font-bold">Download</span>
                 )}
-              </Button>
+                </Button>
             </form>
 
             {/* Error message */}
