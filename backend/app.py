@@ -17,18 +17,30 @@ from urllib.parse import unquote
 
 app = Flask(__name__)
 
-# Add CORS headers to all responses
+# Configure CORS manually for better security
 @app.after_request
 def after_request(response):
-    response.headers.add('Access-Control-Allow-Origin', '*')
+    origin = request.headers.get('Origin')
+    # Allow specific origins for better security
+    allowed_origins = ['http://localhost:3000', 'https://threadextractor.com']
+    
+    if origin in allowed_origins:
+        response.headers.add('Access-Control-Allow-Origin', origin)
+    else:
+        # For development, allow localhost
+        if origin and 'localhost' in origin:
+            response.headers.add('Access-Control-Allow-Origin', origin)
+    
     response.headers.add('Access-Control-Allow-Headers', 'Content-Type,Authorization')
-    response.headers.add('Access-Control-Allow-Methods', 'GET,PUT,POST,DELETE,OPTIONS')
+    response.headers.add('Access-Control-Allow-Methods', 'GET,POST,OPTIONS')
+    response.headers.add('Access-Control-Allow-Credentials', 'true')
     return response
 
 # Handle preflight requests
 @app.route('/', methods=['OPTIONS'])
 @app.route('/extract', methods=['OPTIONS'])
 @app.route('/download', methods=['OPTIONS'])
+@app.route('/proxy-image', methods=['OPTIONS'])
 def handle_options():
     return '', 200
 

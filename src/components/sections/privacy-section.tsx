@@ -41,7 +41,7 @@ export function PrivacySection() {
             <section className="space-y-6">
               <div className="flex items-center gap-3">
                 <Eye className="h-6 w-6 text-primary" />
-                <h2 className="text-2xl font-bold text-foreground">Information We Don't Collect</h2>
+                <h2 className="text-2xl font-bold text-foreground">Information We Don&apos;t Collect</h2>
               </div>
               <p className="text-muted-foreground">
                 We absolutely do not collect or store any of the following information:

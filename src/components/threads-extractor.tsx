@@ -42,7 +42,10 @@ export default function ThreadsExtractor() {
   const [videoMetadata, setVideoMetadata] = useState<VideoMetadata | null>(null)
   const [error, setError] = useState("")
   const [success, setSuccess] = useState("")
-  const [useMockData, setUseMockData] = useState(false)
+  const [useMockData] = useState(false)
+
+  // Get backend URL from environment variable
+  const backendUrl = process.env.NEXT_PUBLIC_BACKEND_URL || 'http://localhost:8080'
 
   // Mock data for testing
   const mockVideoData: VideoData[] = [{
@@ -96,7 +99,7 @@ export default function ThreadsExtractor() {
     }
 
     try {
-      const response = await fetch("http://localhost:8080/extract", {
+      const response = await fetch(`${backendUrl}/extract`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -131,7 +134,7 @@ export default function ThreadsExtractor() {
       } else {
         setError(data.message)
       }
-    } catch (err) {
+    } catch {
       setError("网络错误，请重试")
     } finally {
       setIsLoading(false)
@@ -142,14 +145,14 @@ export default function ThreadsExtractor() {
   const getProxiedImageUrl = (originalUrl: string) => {
     // Use proxy for external images to avoid CORS issues
     if (originalUrl && (originalUrl.includes('cdninstagram.com') || originalUrl.includes('threads.net'))) {
-      return `http://localhost:8080/proxy-image?url=${encodeURIComponent(originalUrl)}`
+      return `${backendUrl}/proxy-image?url=${encodeURIComponent(originalUrl)}`
     }
     return originalUrl
   }
 
   const downloadVideo = async (video: VideoData) => {
     const encodedUrl = encodeURIComponent(video.url)
-    const downloadUrl = `http://localhost:8080/download?url=${encodedUrl}`
+    const downloadUrl = `${backendUrl}/download?url=${encodedUrl}`
 
 
     const link = document.createElement("a")
