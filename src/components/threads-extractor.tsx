@@ -4,7 +4,18 @@ import { useState } from "react"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Download, Copy, Loader2 } from "lucide-react"
-import { threadsExtractor, type VideoData } from "@/lib/threads-extractor"
+
+interface VideoData {
+  url: string
+  index: number
+}
+
+interface ApiResponse {
+  success: boolean
+  message: string
+  videos?: string[]
+}
+
 
 export default function ThreadsExtractor() {
   const [url, setUrl] = useState("")
@@ -20,22 +31,40 @@ export default function ThreadsExtractor() {
       return
     }
 
+    if (!url.includes("threads.com")) {
+      setError("请输入有效的 Threads 链接")
+      return
+    }
+
     setIsLoading(true)
     setError("")
     setSuccess("")
     setVideos([])
 
     try {
-      const result = await threadsExtractor.extractVideos(url)
-      
-      if (result.success) {
-        setVideos(result.videos)
-        setSuccess(result.message)
+      const response = await fetch("http://localhost:8080/extract", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ url }),
+      })
+
+      const data: ApiResponse = await response.json()
+
+      if (data.success && data.videos && data.videos.length > 0) {
+        // Only show the first video as it's typically the most accurate
+        const videoData = [{
+          url: data.videos[0],
+          index: 1,
+        }]
+        setVideos(videoData)
+        setSuccess(data.message)
       } else {
-        setError(result.message)
+        setError(data.message)
       }
-    } catch {
-      setError("提取过程中出现错误，请重试")
+    } catch (err) {
+      setError("网络错误，请重试")
     } finally {
       setIsLoading(false)
     }
@@ -46,24 +75,27 @@ export default function ThreadsExtractor() {
       await navigator.clipboard.writeText(text)
       setSuccess("链接已复制到剪贴板")
       setTimeout(() => setSuccess(""), 3000)
-    } catch {
+    } catch (err) {
       setError("复制失败，请手动复制")
     }
   }
 
-  const downloadVideo = (video: VideoData) => {
+  const downloadVideo = async (video: VideoData) => {
+    const encodedUrl = encodeURIComponent(video.url)
+    const downloadUrl = `http://localhost:8080/download?url=${encodedUrl}`
+
+
     const link = document.createElement("a")
-    link.href = video.url
-    link.download = `threads_video_${video.index}.mp4`
-    link.target = "_blank"
+    link.href = downloadUrl
+    link.download = `threads_video.mp4`
     link.style.display = "none"
     
     document.body.appendChild(link)
     link.click()
     document.body.removeChild(link)
-    
-    setSuccess(`视频 ${video.index} 开始下载...`)
+
     setTimeout(() => setSuccess(""), 3000)
+    setSuccess(`视频下载成功`)
   }
 
   return (
@@ -125,7 +157,7 @@ export default function ThreadsExtractor() {
           {videos.length > 0 && (
             <div className="max-w-2xl mx-auto space-y-4">
               <h3 className="text-xl font-semibold text-foreground">
-                找到 {videos.length} 个视频
+                视频已找到
               </h3>
               <div className="space-y-3">
                 {videos.map((video) => (
@@ -135,9 +167,6 @@ export default function ThreadsExtractor() {
                   >
                     <div className="flex items-center justify-between gap-4">
                       <div className="flex-1 min-w-0">
-                        <p className="font-medium text-card-foreground mb-1">
-                          视频 {video.index}
-                        </p>
                         <p className="text-sm text-muted-foreground truncate">
                           {video.url}
                         </p>
