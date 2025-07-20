@@ -1,19 +1,36 @@
 "use client"
 
 import { useState } from "react"
+import Image from "next/image"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
-import { Download, Copy, Loader2 } from "lucide-react"
+import { Download, Loader2 } from "lucide-react"
 
 interface VideoData {
   url: string
   index: number
 }
 
+interface UserProfile {
+  username: string | null
+  display_name: string | null
+  avatar_url: string | null
+  followers_count: number | null
+  bio: string | null
+}
+
+interface VideoMetadata {
+  title: string | null
+  thumbnail_url: string | null
+  post_content: string | null
+}
+
 interface ApiResponse {
   success: boolean
   message: string
   videos?: string[]
+  user_profile?: UserProfile
+  video_metadata?: VideoMetadata
 }
 
 
@@ -21,8 +38,31 @@ export default function ThreadsExtractor() {
   const [url, setUrl] = useState("")
   const [isLoading, setIsLoading] = useState(false)
   const [videos, setVideos] = useState<VideoData[]>([])
+  const [userProfile, setUserProfile] = useState<UserProfile | null>(null)
+  const [videoMetadata, setVideoMetadata] = useState<VideoMetadata | null>(null)
   const [error, setError] = useState("")
   const [success, setSuccess] = useState("")
+  const [useMockData, setUseMockData] = useState(false)
+
+  // Mock data for testing
+  const mockVideoData: VideoData[] = [{
+    url: "https://video.threads.net/v/example_video_thread_12345.mp4",
+    index: 1,
+  }]
+
+  const mockUserProfile: UserProfile = {
+    username: "example_user",
+    display_name: "Example User",
+    avatar_url: "https://example.com/avatar.jpg",
+    followers_count: 1234,
+    bio: "This is an example bio for testing purposes."
+  }
+
+  const mockVideoMetadata: VideoMetadata = {
+    title: "Check out this amazing video from Threads! 🎥✨",
+    thumbnail_url: "https://example.com/thumbnail.jpg",
+    post_content: "Just sharing this incredible moment! Can't believe how beautiful this sunset looks. What do you think? 🌅 #sunset #nature #beautiful"
+  }
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -40,6 +80,20 @@ export default function ThreadsExtractor() {
     setError("")
     setSuccess("")
     setVideos([])
+    setUserProfile(null)
+    setVideoMetadata(null)
+
+    // Use mock data if enabled
+    if (useMockData) {
+      setTimeout(() => {
+        setVideos(mockVideoData)
+        setUserProfile(mockUserProfile)
+        setVideoMetadata(mockVideoMetadata)
+        setSuccess("视频提取成功（Mock 数据）")
+        setIsLoading(false)
+      }, 1500) // Simulate loading time
+      return
+    }
 
     try {
       const response = await fetch("http://localhost:8080/extract", {
@@ -52,13 +106,27 @@ export default function ThreadsExtractor() {
 
       const data: ApiResponse = await response.json()
 
-      if (data.success && data.videos && data.videos.length > 0) {
-        // Only show the first video as it's typically the most accurate
-        const videoData = [{
-          url: data.videos[0],
-          index: 1,
-        }]
-        setVideos(videoData)
+      if (data.success) {
+        // Set user profile if available
+        if (data.user_profile) {
+          setUserProfile(data.user_profile)
+        }
+        
+        // Set video metadata if available
+        if (data.video_metadata) {
+          setVideoMetadata(data.video_metadata)
+        }
+        
+        // Set videos if available
+        if (data.videos && data.videos.length > 0) {
+          // Only show the first video as it's typically the most accurate
+          const videoData = [{
+            url: data.videos[0],
+            index: 1,
+          }]
+          setVideos(videoData)
+        }
+        
         setSuccess(data.message)
       } else {
         setError(data.message)
@@ -70,14 +138,13 @@ export default function ThreadsExtractor() {
     }
   }
 
-  const copyToClipboard = async (text: string) => {
-    try {
-      await navigator.clipboard.writeText(text)
-      setSuccess("链接已复制到剪贴板")
-      setTimeout(() => setSuccess(""), 3000)
-    } catch (err) {
-      setError("复制失败，请手动复制")
+
+  const getProxiedImageUrl = (originalUrl: string) => {
+    // Use proxy for external images to avoid CORS issues
+    if (originalUrl && (originalUrl.includes('cdninstagram.com') || originalUrl.includes('threads.net'))) {
+      return `http://localhost:8080/proxy-image?url=${encodeURIComponent(originalUrl)}`
     }
+    return originalUrl
   }
 
   const downloadVideo = async (video: VideoData) => {
@@ -99,21 +166,21 @@ export default function ThreadsExtractor() {
   }
 
   return (
-    <div className="bg-background w-full h-full flex items-center justify-center">
-      <div className="max-w-6xl mx-auto px-4 w-full">
+    <div className="bg-background w-full flex items-center justify-center py-8 sm:py-12">
+      <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 w-full">
         <div className="text-center space-y-6">
           {/* Header */}
           <div className="space-y-2">
             <h1 className="text-3xl sm:text-4xl font-bold text-foreground">
-              <span className="text-primary">Threads</span> Video Downloader
+              Easily download any <span className="text-primary">Threads</span> Video
             </h1>
             <p className="text-base text-muted-foreground">
-              Easily download videos from Threads platform.
+              Just paste the link to download videos with one click, completely free of charge.
             </p>
           </div>
 
           {/* Main Form */}
-          <div className="max-w-2xl mx-auto space-y-3">
+          <div className="max-w-2xl mx-auto space-y-4">
             <form onSubmit={handleSubmit} className="flex flex-col sm:flex-row gap-3">
               <Input
                 type="url"
@@ -131,7 +198,7 @@ export default function ThreadsExtractor() {
                 {isLoading ? (
                   <Loader2 className="h-4 w-4 animate-spin" />
                 ) : (
-                  <span className="font-bold">Download</span>
+                  <span className="font-bold">Load</span>
                 )}
                 </Button>
             </form>
@@ -153,44 +220,79 @@ export default function ThreadsExtractor() {
 
           </div>
 
-          {/* Results */}
+          {/* Video Result Card */}
           {videos.length > 0 && (
-            <div className="max-w-2xl mx-auto space-y-4">
-              <h3 className="text-xl font-semibold text-foreground">
-                视频已找到
-              </h3>
-              <div className="space-y-3">
-                {videos.map((video) => (
-                  <div 
-                    key={video.index} 
-                    className="border border-border rounded-lg p-4 bg-card"
-                  >
-                    <div className="flex items-center justify-between gap-4">
-                      <div className="flex-1 min-w-0">
-                        <p className="text-sm text-muted-foreground truncate">
-                          {video.url}
-                        </p>
+            <div className="max-w-2xl mx-auto mb-8">
+              <div className="border border-border rounded-lg overflow-hidden bg-card">
+                {/* Video Thumbnail */}
+                {videoMetadata?.thumbnail_url && (
+                  <div className="relative aspect-video bg-muted">
+                    <Image
+                      src={getProxiedImageUrl(videoMetadata.thumbnail_url)}
+                      alt="Video thumbnail"
+                      fill
+                      className="object-cover"
+                      sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
+                      onError={() => {
+                        console.log('Image failed to load:', videoMetadata.thumbnail_url);
+                      }}
+                      onLoad={() => {
+                        console.log('Image loaded successfully:', videoMetadata.thumbnail_url);
+                      }}
+                    />
+                  </div>
+                )}
+                
+                <div className="p-6 space-y-4">
+                {/* Post Content or Video Title */}
+                {(videoMetadata?.post_content || videoMetadata?.title) && (
+                  <div className="space-y-2">
+                    <h3 className="font-medium text-foreground text-lg leading-snug">
+                      {videoMetadata.post_content || videoMetadata.title}
+                    </h3>
+                  </div>
+                )}
+                
+                {/* Author Information */}
+                {userProfile && (
+                  <div className="flex items-center gap-3">
+                    {userProfile.avatar_url && (
+                      <div className="relative w-10 h-10">
+                        <Image
+                          src={getProxiedImageUrl(userProfile.avatar_url)}
+                          alt="Author"
+                          width={40}
+                          height={40}
+                          className="rounded-full object-cover"
+                          sizes="40px"
+                          onError={() => {
+                            console.log('Avatar failed to load:', userProfile.avatar_url);
+                          }}
+                        />
                       </div>
-                      <div className="flex gap-2">
-                        <Button
-                          variant="outline"
-                          size="sm"
-                          onClick={() => copyToClipboard(video.url)}
-                        >
-                          <Copy className="h-4 w-4 mr-1" />
-                          复制
-                        </Button>
-                        <Button
-                          size="sm"
-                          onClick={() => downloadVideo(video)}
-                        >
-                          <Download className="h-4 w-4 mr-1" />
-                          下载
-                        </Button>
+                    )}
+                    <div className="flex-1">
+                      <div className="flex items-center gap-2">
+                        {userProfile.username && (
+                          <span className="text-muted-foreground text-sm">
+                            来自 @{userProfile.username}
+                          </span>
+                        )}
                       </div>
                     </div>
                   </div>
-                ))}
+                )}
+                
+                {/* Download Button */}
+                <Button
+                  onClick={() => downloadVideo(videos[0])}
+                  className="w-full"
+                  size="lg"
+                >
+                  <Download className="h-4 w-4 mr-2" />
+                  <span className="font-bold">Download Video</span>
+                </Button>
+                </div>
               </div>
             </div>
           )}
