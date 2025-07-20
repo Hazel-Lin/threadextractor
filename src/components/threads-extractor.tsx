@@ -33,7 +33,6 @@ interface ApiResponse {
   video_metadata?: VideoMetadata
 }
 
-
 export default function ThreadsExtractor() {
   const [url, setUrl] = useState("")
   const [isLoading, setIsLoading] = useState(false)
@@ -69,13 +68,14 @@ export default function ThreadsExtractor() {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
+
     if (!url.trim()) {
-      setError("请输入有效的 Threads 链接")
+      setError("Please enter a valid Threads link")
       return
     }
 
-    if (!url.includes("threads.com")) {
-      setError("请输入有效的 Threads 链接")
+    if (!url.includes('threads.net') && !url.includes('instagram.com/p/')) {
+      setError("Please enter a valid Threads link")
       return
     }
 
@@ -92,7 +92,7 @@ export default function ThreadsExtractor() {
         setVideos(mockVideoData)
         setUserProfile(mockUserProfile)
         setVideoMetadata(mockVideoMetadata)
-        setSuccess("视频提取成功（Mock 数据）")
+        setSuccess("Video extracted successfully!")
         setIsLoading(false)
       }, 1500) // Simulate loading time
       return
@@ -135,7 +135,7 @@ export default function ThreadsExtractor() {
         setError(data.message)
       }
     } catch {
-      setError("网络错误，请重试")
+      setError("Network error, please try again")
     } finally {
       setIsLoading(false)
     }
@@ -154,31 +154,30 @@ export default function ThreadsExtractor() {
     const encodedUrl = encodeURIComponent(video.url)
     const downloadUrl = `${backendUrl}/download?url=${encodedUrl}`
 
-
     const link = document.createElement("a")
     link.href = downloadUrl
-    link.download = `threads_video.mp4`
-    link.style.display = "none"
+    link.target = "_blank"
+    link.download = `threads-video-${video.index}.mp4`
     
     document.body.appendChild(link)
     link.click()
     document.body.removeChild(link)
-
+    
+    setSuccess(`Video ${video.index} download started...`)
     setTimeout(() => setSuccess(""), 3000)
-    setSuccess(`视频下载成功`)
   }
 
   return (
     <div className="bg-background w-full flex items-center justify-center py-8 sm:py-12">
       <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 w-full">
-        <div className="text-center space-y-6">
+        <div className="space-y-8">
           {/* Header */}
-          <div className="space-y-2">
+          <div className="text-center space-y-4">
             <h1 className="text-3xl sm:text-4xl font-bold text-foreground">
-              Easily download any <span className="text-primary">Threads</span> Video
+              <span className="text-primary">Threads</span> Video Downloader
             </h1>
             <p className="text-base text-muted-foreground">
-              Just paste the link to download videos with one click, completely free of charge.
+              Easily download videos from Threads platform.
             </p>
           </div>
 
@@ -187,23 +186,23 @@ export default function ThreadsExtractor() {
             <form onSubmit={handleSubmit} className="flex flex-col sm:flex-row gap-3">
               <Input
                 type="url"
-                placeholder="Enter a Threads Link"
                 value={url}
                 onChange={(e) => setUrl(e.target.value)}
+                placeholder="Enter a Threads link..."
+                className="flex-1"
                 disabled={isLoading}
-                className="flex-1 h-12 px-4 text-base border-2 border-border focus:border-primary text-foreground placeholder:text-placeholder"
               />
-                <Button 
+              <Button 
                 type="submit" 
-                className="h-12 px-8 bg-primary hover:bg-primary/90 text-primary-foreground font-bold sm:flex-shrink-0" 
                 disabled={isLoading}
-                >
+                className="sm:w-auto w-full"
+              >
                 {isLoading ? (
                   <Loader2 className="h-4 w-4 animate-spin" />
                 ) : (
-                  <span className="font-bold">Load</span>
+                  <span className="font-bold">Extract</span>
                 )}
-                </Button>
+              </Button>
             </form>
 
             {/* Error message */}
@@ -219,13 +218,11 @@ export default function ThreadsExtractor() {
                 {success}
               </div>
             )}
-
-
           </div>
 
           {/* Video Result Card */}
           {videos.length > 0 && (
-            <div className="max-w-2xl mx-auto mb-8">
+            <div className="max-w-2xl mx-auto">
               <div className="border border-border rounded-lg overflow-hidden bg-card">
                 {/* Video Thumbnail */}
                 {videoMetadata?.thumbnail_url && (
@@ -247,54 +244,64 @@ export default function ThreadsExtractor() {
                 )}
                 
                 <div className="p-6 space-y-4">
-                {/* Post Content or Video Title */}
-                {(videoMetadata?.post_content || videoMetadata?.title) && (
-                  <div className="space-y-2">
-                    <h3 className="font-medium text-foreground text-lg leading-snug">
-                      {videoMetadata.post_content || videoMetadata.title}
-                    </h3>
-                  </div>
-                )}
-                
-                {/* Author Information */}
-                {userProfile && (
-                  <div className="flex items-center gap-3">
-                    {userProfile.avatar_url && (
-                      <div className="relative w-10 h-10">
-                        <Image
-                          src={getProxiedImageUrl(userProfile.avatar_url)}
-                          alt="Author"
-                          width={40}
-                          height={40}
-                          className="rounded-full object-cover"
-                          sizes="40px"
-                          onError={() => {
-                            console.log('Avatar failed to load:', userProfile.avatar_url);
-                          }}
-                        />
-                      </div>
-                    )}
-                    <div className="flex-1">
-                      <div className="flex items-center gap-2">
-                        {userProfile.username && (
-                          <span className="text-muted-foreground text-sm">
-                            来自 @{userProfile.username}
+                  {/* Post Content or Video Title */}
+                  {(videoMetadata?.post_content || videoMetadata?.title) && (
+                    <div className="space-y-2">
+                      <h3 className="font-medium text-foreground text-lg leading-snug">
+                        {videoMetadata.post_content || videoMetadata.title}
+                      </h3>
+                    </div>
+                  )}
+                  
+                  {/* Author Information */}
+                  {userProfile && (
+                    <div className="flex items-center gap-3">
+                      {userProfile.avatar_url && (
+                        <div className="relative w-10 h-10">
+                          <Image
+                            src={getProxiedImageUrl(userProfile.avatar_url)}
+                            alt="Author"
+                            width={40}
+                            height={40}
+                            className="rounded-full object-cover"
+                            sizes="40px"
+                            onError={() => {
+                              console.log('Avatar failed to load:', userProfile.avatar_url);
+                            }}
+                          />
+                        </div>
+                      )}
+                      <div className="flex-1">
+                        <div className="flex items-center gap-2">
+                          {userProfile.display_name && (
+                            <span className="font-medium text-foreground text-sm">
+                              {userProfile.display_name}
+                            </span>
+                          )}
+                          {userProfile.username && (
+                            <span className="text-muted-foreground text-sm">
+                              @{userProfile.username}
+                            </span>
+                          )}
+                        </div>
+                        {userProfile.followers_count && (
+                          <span className="text-muted-foreground text-xs">
+                            {userProfile.followers_count.toLocaleString()} followers
                           </span>
                         )}
                       </div>
                     </div>
-                  </div>
-                )}
-                
-                {/* Download Button */}
-                <Button
-                  onClick={() => downloadVideo(videos[0])}
-                  className="w-full"
-                  size="lg"
-                >
-                  <Download className="h-4 w-4 mr-2" />
-                  <span className="font-bold">Download Video</span>
-                </Button>
+                  )}
+                  
+                  {/* Download Button */}
+                  <Button
+                    onClick={() => downloadVideo(videos[0])}
+                    className="w-full"
+                    size="lg"
+                  >
+                    <Download className="h-4 w-4 mr-2" />
+                    <span className="font-bold">Download Video</span>
+                  </Button>
                 </div>
               </div>
             </div>
