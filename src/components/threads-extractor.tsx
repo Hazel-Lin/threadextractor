@@ -48,7 +48,7 @@ export default function ThreadsExtractor() {
   const [videoMetadata, setVideoMetadata] = useState<VideoMetadata | null>(null)
   const [error, setError] = useState("")
   const [success, setSuccess] = useState("")
-  const [useMockData] = useState(true) // 启用 Mock 数据进行测试
+  const [useMockData] = useState(false) // 禁用 Mock 数据，使用真实API
   const [loadingSteps, setLoadingSteps] = useState<LoadingStep[]>([])
   const [currentProgress, setCurrentProgress] = useState(0)
 
@@ -149,7 +149,7 @@ export default function ThreadsExtractor() {
       return
     }
 
-    if (!url.includes('threads.com') && !url.includes('instagram.com/p/')) {
+    if (!url.includes('threads.com') && !url.includes('threads.net') && !url.includes('instagram.com/p/')) {
       setError("Please enter a valid Threads link")
       return
     }
