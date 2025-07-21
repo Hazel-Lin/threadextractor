@@ -2,6 +2,15 @@ from flask import Flask, render_template, request, jsonify, Response, stream_tem
 import sys
 import os
 from urllib.parse import quote
+from dotenv import load_dotenv
+from flask_limiter import Limiter
+from flask_limiter.util import get_remote_address
+import validators
+import re
+from urllib.parse import urlparse
+
+# Load environment variables from .env file
+load_dotenv()
 
 # 将现有的脚本功能导入
 from selenium import webdriver
@@ -16,6 +25,177 @@ import requests
 from urllib.parse import unquote
 
 app = Flask(__name__)
+
+# Configure rate limiting for API protection
+limiter = Limiter(
+    app=app,
+    key_func=get_remote_address,
+    default_limits=[
+        os.getenv('RATELIMIT_DEFAULT_PER_HOUR', '100') + " per hour",
+        os.getenv('RATELIMIT_DEFAULT_PER_MINUTE', '20') + " per minute"
+    ],
+    storage_uri=os.getenv('RATELIMIT_STORAGE_URL', 'memory://'),
+    strategy="fixed-window"
+)
+
+# Rate limit exceeded handler
+@app.errorhandler(429)
+def rate_limit_exceeded(e):
+    return jsonify({
+        'success': False,
+        'message': 'Rate limit exceeded. Please try again later.',
+        'error': 'Too Many Requests',
+        'retry_after': str(e.retry_after) if hasattr(e, 'retry_after') else '60'
+    }), 429
+
+# Input validation functions
+def validate_threads_url(url):
+    """Validate and sanitize Threads URL"""
+    if not url or not isinstance(url, str):
+        return False, "URL is required and must be a string"
+    
+    # Strip whitespace and normalize
+    url = url.strip()
+    
+    # Basic URL format validation
+    if not validators.url(url):
+        return False, "Invalid URL format"
+    
+    # Parse URL for detailed validation
+    try:
+        parsed = urlparse(url)
+    except Exception:
+        return False, "Invalid URL structure"
+    
+    # Check protocol security
+    if parsed.scheme not in ['http', 'https']:
+        return False, "Only HTTP and HTTPS protocols are allowed"
+    
+    # Validate Threads domains
+    allowed_domains = [
+        'threads.com',
+        'www.threads.com',
+        'threads.net',
+        'www.threads.net',
+        'instagram.com',
+        'www.instagram.com'
+    ]
+    
+    if not any(domain in parsed.netloc.lower() for domain in allowed_domains):
+        return False, "Only Threads and Instagram URLs are supported"
+    
+    # Check for suspicious patterns
+    suspicious_patterns = [
+        r'javascript:',
+        r'data:',
+        r'file:',
+        r'ftp:',
+        r'<script',
+        r'</script>',
+        r'<iframe',
+        r'</iframe>'
+    ]
+    
+    for pattern in suspicious_patterns:
+        if re.search(pattern, url, re.IGNORECASE):
+            return False, "URL contains potentially malicious content"
+    
+    # URL length check
+    if len(url) > 2000:
+        return False, "URL is too long (maximum 2000 characters)"
+    
+    return True, url
+
+def validate_image_url(url):
+    """Validate image URL for proxy endpoint"""
+    if not url or not isinstance(url, str):
+        return False, "Image URL is required"
+    
+    url = url.strip()
+    
+    # Basic URL validation
+    if not validators.url(url):
+        return False, "Invalid image URL format"
+    
+    try:
+        parsed = urlparse(url)
+    except Exception:
+        return False, "Invalid image URL structure"
+    
+    # Check protocol
+    if parsed.scheme not in ['http', 'https']:
+        return False, "Only HTTP and HTTPS protocols allowed for images"
+    
+    # Validate allowed image domains
+    allowed_image_domains = [
+        'cdninstagram.com',
+        'threads.net',
+        'instagram.com',
+        'scontent.cdninstagram.com'
+    ]
+    
+    if not any(domain in parsed.netloc.lower() for domain in allowed_image_domains):
+        return False, "Image domain not allowed"
+    
+    # Check file extension if present
+    path = parsed.path.lower()
+    if path and '.' in path:
+        allowed_extensions = ['.jpg', '.jpeg', '.png', '.gif', '.webp']
+        if not any(path.endswith(ext) for ext in allowed_extensions):
+            return False, "Image file type not supported"
+    
+    # URL length check
+    if len(url) > 1000:
+        return False, "Image URL is too long"
+    
+    return True, url
+
+def validate_video_url(url):
+    """Validate video URL for download endpoint"""
+    if not url or not isinstance(url, str):
+        return False, "Video URL is required"
+    
+    url = url.strip()
+    
+    # Basic URL validation
+    if not validators.url(url):
+        return False, "Invalid video URL format"
+    
+    try:
+        parsed = urlparse(url)
+    except Exception:
+        return False, "Invalid video URL structure"
+    
+    # Check protocol
+    if parsed.scheme not in ['http', 'https']:
+        return False, "Only HTTP and HTTPS protocols allowed for videos"
+    
+    # Video URLs should typically be from video hosting domains
+    trusted_video_domains = [
+        'cdninstagram.com',
+        'video.threads.net',
+        'scontent.cdninstagram.com',
+        'instagram.com'
+    ]
+    
+    if not any(domain in parsed.netloc.lower() for domain in trusted_video_domains):
+        return False, "Video domain not trusted"
+    
+    # Check for video file indicators (more flexible)
+    path = parsed.path.lower()
+    if path:
+        video_indicators = ['.mp4', '.mov', '.avi', '.webm', '/v/', '/video/']
+        # If path has extension, it should be video-related
+        # If no extension, allow it (many video URLs don't have extensions)
+        if '.' in path.split('/')[-1]:  # Check only the filename part
+            if not any(indicator in path for indicator in video_indicators):
+                return False, "URL does not appear to be a video"
+    
+    # URL length check
+    if len(url) > 1500:
+        return False, "Video URL is too long"
+    
+    return True, url
 
 # Configure CORS manually for better security
 @app.after_request
@@ -126,7 +306,7 @@ def extract_video_url_selenium(thread_url):
             
             for url in video_urls:
                 # 验证链接有效性
-                if validate_video_url(url, cookie_dict):
+                if validate_video_url_simple(url, cookie_dict):
                     valid_urls.append(url)
             
             return {
@@ -466,7 +646,7 @@ def extract_video_metadata(html):
             'post_content': None
         }
 
-def validate_video_url(url, cookies=None):
+def validate_video_url_simple(url, cookies=None):
     """验证视频URL是否有效"""
     try:
         headers = {
@@ -495,18 +675,73 @@ def validate_video_url(url, cookies=None):
 def index():
     return jsonify({'message': 'Threads Video Extractor Backend API', 'status': 'running'})
 
+@app.route('/health')
+def health_check():
+    """Health check endpoint for monitoring and load balancers"""
+    try:
+        # Check Chrome driver availability
+        chrome_options = Options()
+        chrome_options.add_argument("--headless")
+        chrome_options.add_argument("--no-sandbox")
+        chrome_options.add_argument("--disable-dev-shm-usage")
+        
+        driver = webdriver.Chrome(options=chrome_options)
+        driver.quit()
+        chrome_available = True
+        chrome_error = None
+    except Exception as e:
+        chrome_available = False
+        chrome_error = str(e)
+    
+    # Basic system info
+    import time
+    import psutil
+    
+    health_data = {
+        'status': 'healthy' if chrome_available else 'degraded',
+        'timestamp': time.time(),
+        'version': '1.0.0',
+        'components': {
+            'chrome_driver': {
+                'status': 'available' if chrome_available else 'unavailable',
+                'error': chrome_error
+            },
+            'rate_limiter': {
+                'status': 'available',
+                'storage': os.getenv('RATELIMIT_STORAGE_URL', 'memory://')
+            },
+            'system': {
+                'memory_percent': psutil.virtual_memory().percent,
+                'cpu_percent': psutil.cpu_percent(interval=1),
+                'disk_percent': psutil.disk_usage('/').percent
+            }
+        }
+    }
+    
+    status_code = 200 if chrome_available else 503
+    return jsonify(health_data), status_code
+
 @app.route('/extract', methods=['POST'])
+@limiter.limit("5 per minute")  # Strict limit for video extraction
 def extract_videos():
     try:
+        # Input validation for JSON data
         data = request.get_json()
-        thread_url = data.get('url', '').strip()
+        if not data:
+            return jsonify({'success': False, 'message': 'Request must contain JSON data'}), 400
         
-        if not thread_url:
-            return jsonify({'success': False, 'message': 'Please enter a valid Threads link'})
+        thread_url = data.get('url', '')
         
-        # Validate Threads link
-        if 'threads.com' not in thread_url:
-            return jsonify({'success': False, 'message': 'Please enter a valid Threads link'})
+        # Comprehensive URL validation
+        is_valid, validation_result = validate_threads_url(thread_url)
+        if not is_valid:
+            return jsonify({
+                'success': False, 
+                'message': f'Invalid URL: {validation_result}'
+            }), 400
+        
+        # Use the validated and sanitized URL
+        thread_url = validation_result
         
         # 提取视频链接和用户信息
         extraction_result = extract_video_url_selenium(thread_url)
@@ -535,16 +770,21 @@ def extract_videos():
         return jsonify({'success': False, 'message': f'Error occurred during processing: {str(e)}'})
 
 @app.route('/proxy-image')
+@limiter.limit("30 per minute")  # Higher limit for image proxying
 def proxy_image():
     """Proxy images to avoid CORS issues"""
     try:
         image_url = request.args.get('url')
-        if not image_url:
-            return jsonify({'error': 'Missing image URL'}), 400
         
-        # Validate URL to prevent misuse
-        if not any(domain in image_url for domain in ['cdninstagram.com', 'threads.net', 'instagram.com']):
-            return jsonify({'error': 'Invalid image source'}), 400
+        # Comprehensive image URL validation
+        is_valid, validation_result = validate_image_url(image_url)
+        if not is_valid:
+            return jsonify({
+                'error': f'Invalid image URL: {validation_result}'
+            }), 400
+        
+        # Use the validated and sanitized URL
+        image_url = validation_result
         
         headers = {
             'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36',
@@ -581,16 +821,28 @@ def proxy_image():
         return jsonify({'error': f'Error proxying image: {str(e)}'}), 500
 
 @app.route('/download')
+@limiter.limit("10 per minute")  # Moderate limit for downloads
 def download_video():
     """代理下载视频"""
     try:
         video_url = request.args.get('url')
-        if not video_url:
-            return jsonify({'error': 'Missing video link'}), 400
         
-        # 获取视频文件名
+        # Comprehensive video URL validation
+        is_valid, validation_result = validate_video_url(video_url)
+        if not is_valid:
+            return jsonify({
+                'error': f'Invalid video URL: {validation_result}'
+            }), 400
+        
+        # Use the validated and sanitized URL
+        video_url = validation_result
+        
+        # Validate video index parameter
         video_index = request.args.get('index', '1')
-        filename = f'threads_video_{video_index}.mp4'
+        if not video_index.isdigit() or int(video_index) < 1 or int(video_index) > 100:
+            return jsonify({'error': 'Invalid video index (must be 1-100)'}), 400
+        
+        filename = f'threads_video.mp4'
         
         # 设置请求头
         headers = {
@@ -631,4 +883,21 @@ def download_video():
         return jsonify({'error': f'Error occurred during download: {str(e)}'}), 500
 
 if __name__ == '__main__':
-    app.run(debug=True, host='0.0.0.0', port=8080)
+    # Production-safe configuration
+    import os
+    
+    # Get configuration from environment variables
+    debug_mode = os.getenv('FLASK_DEBUG', 'False').lower() == 'true'
+    host = os.getenv('FLASK_HOST', '127.0.0.1')  # Default to localhost for security
+    port = int(os.getenv('FLASK_PORT', '8080'))
+    
+    # Warn about debug mode in production
+    if debug_mode:
+        import warnings
+        warnings.warn(
+            "Debug mode is enabled! This should NEVER be used in production.",
+            UserWarning,
+            stacklevel=2
+        )
+    
+    app.run(debug=debug_mode, host=host, port=port)
