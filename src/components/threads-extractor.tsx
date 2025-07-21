@@ -33,6 +33,13 @@ interface ApiResponse {
   video_metadata?: VideoMetadata
 }
 
+interface LoadingStep {
+  id: string
+  label: string
+  status: 'pending' | 'active' | 'completed' | 'error'
+  description?: string
+}
+
 export default function ThreadsExtractor() {
   const [url, setUrl] = useState("")
   const [isLoading, setIsLoading] = useState(false)
@@ -41,10 +48,78 @@ export default function ThreadsExtractor() {
   const [videoMetadata, setVideoMetadata] = useState<VideoMetadata | null>(null)
   const [error, setError] = useState("")
   const [success, setSuccess] = useState("")
-  const [useMockData] = useState(false)
+  const [useMockData] = useState(true) // 启用 Mock 数据进行测试
+  const [loadingSteps, setLoadingSteps] = useState<LoadingStep[]>([])
+  const [currentProgress, setCurrentProgress] = useState(0)
 
   // Get backend URL from environment variable
   const backendUrl = process.env.NEXT_PUBLIC_BACKEND_URL || 'http://localhost:8080'
+
+  // Define extraction steps
+  const extractionSteps: LoadingStep[] = [
+    {
+      id: 'validate',
+      label: '验证链接',
+      status: 'pending',
+      description: '检查 Threads 链接格式'
+    },
+    {
+      id: 'connect',
+      label: '连接服务器',
+      status: 'pending',
+      description: '建立与后端服务的连接'
+    },
+    {
+      id: 'parse',
+      label: '解析页面',
+      status: 'pending',
+      description: '获取页面内容和元数据'
+    },
+    {
+      id: 'extract',
+      label: '提取视频',
+      status: 'pending',
+      description: '定位并提取视频文件'
+    },
+    {
+      id: 'process',
+      label: '处理数据',
+      status: 'pending',
+      description: '整理用户信息和视频信息'
+    }
+  ]
+
+  const updateStepStatus = (stepId: string, status: LoadingStep['status']) => {
+    setLoadingSteps(prev => prev.map(step => 
+      step.id === stepId ? { ...step, status } : step
+    ))
+  }
+
+  const simulateProgress = () => {
+    setLoadingSteps([...extractionSteps])
+    let currentStep = 0
+    const totalSteps = extractionSteps.length
+
+    const progressInterval = setInterval(() => {
+      if (currentStep < totalSteps) {
+        // Mark current step as active
+        updateStepStatus(extractionSteps[currentStep].id, 'active')
+        
+        // Update progress
+        setCurrentProgress(((currentStep + 1) / totalSteps) * 100)
+        
+        // Mark previous step as completed after a delay
+        setTimeout(() => {
+          updateStepStatus(extractionSteps[currentStep].id, 'completed')
+          currentStep++
+        }, 800)
+      } else {
+        clearInterval(progressInterval)
+      }
+    }, 1000)
+
+    return progressInterval
+  }
 
   // Mock data for testing
   const mockVideoData: VideoData[] = [{
@@ -74,7 +149,7 @@ export default function ThreadsExtractor() {
       return
     }
 
-    if (!url.includes('threads.net') && !url.includes('instagram.com/p/')) {
+    if (!url.includes('threads.com') && !url.includes('instagram.com/p/')) {
       setError("Please enter a valid Threads link")
       return
     }
@@ -85,20 +160,40 @@ export default function ThreadsExtractor() {
     setVideos([])
     setUserProfile(null)
     setVideoMetadata(null)
+    setCurrentProgress(0)
+
+    // Initialize loading steps
+    setLoadingSteps([...extractionSteps])
+
+    // Start progress simulation
+    let progressInterval: NodeJS.Timeout
 
     // Use mock data if enabled
     if (useMockData) {
+      progressInterval = simulateProgress()
+      
       setTimeout(() => {
+        clearInterval(progressInterval)
         setVideos(mockVideoData)
         setUserProfile(mockUserProfile)
         setVideoMetadata(mockVideoMetadata)
         setSuccess("Video extracted successfully!")
         setIsLoading(false)
-      }, 1500) // Simulate loading time
+      }, 5000) // Simulate realistic loading time
       return
     }
 
     try {
+      // Step 1: Validate URL
+      updateStepStatus('validate', 'active')
+      await new Promise(resolve => setTimeout(resolve, 500))
+      updateStepStatus('validate', 'completed')
+      setCurrentProgress(20)
+
+      // Step 2: Connect to server
+      updateStepStatus('connect', 'active')
+      await new Promise(resolve => setTimeout(resolve, 300))
+      
       const response = await fetch(`${backendUrl}/extract`, {
         method: "POST",
         headers: {
@@ -107,9 +202,30 @@ export default function ThreadsExtractor() {
         body: JSON.stringify({ url }),
       })
 
+      updateStepStatus('connect', 'completed')
+      setCurrentProgress(40)
+
+      // Step 3: Parse page
+      updateStepStatus('parse', 'active')
+      await new Promise(resolve => setTimeout(resolve, 800))
+      
       const data: ApiResponse = await response.json()
+      
+      updateStepStatus('parse', 'completed')
+      setCurrentProgress(70)
+
+      // Step 4: Extract video
+      updateStepStatus('extract', 'active')
+      await new Promise(resolve => setTimeout(resolve, 600))
 
       if (data.success) {
+        updateStepStatus('extract', 'completed')
+        setCurrentProgress(90)
+
+        // Step 5: Process data
+        updateStepStatus('process', 'active')
+        await new Promise(resolve => setTimeout(resolve, 400))
+
         // Set user profile if available
         if (data.user_profile) {
           setUserProfile(data.user_profile)
@@ -130,12 +246,20 @@ export default function ThreadsExtractor() {
           setVideos(videoData)
         }
         
+        updateStepStatus('process', 'completed')
+        setCurrentProgress(100)
         setSuccess(data.message)
       } else {
+        updateStepStatus('extract', 'error')
         setError(data.message)
       }
     } catch {
-      setError("Network error, please try again")
+      // Find the currently active step and mark it as error
+      const activeStep = loadingSteps.find(step => step.status === 'active')
+      if (activeStep) {
+        updateStepStatus(activeStep.id, 'error')
+      }
+      setError("Network error, please try again.")
     } finally {
       setIsLoading(false)
     }
@@ -154,30 +278,31 @@ export default function ThreadsExtractor() {
     const encodedUrl = encodeURIComponent(video.url)
     const downloadUrl = `${backendUrl}/download?url=${encodedUrl}`
 
+
     const link = document.createElement("a")
     link.href = downloadUrl
-    link.target = "_blank"
-    link.download = `threads-video-${video.index}.mp4`
+    link.download = `threads_video.mp4`
+    link.style.display = "none"
     
     document.body.appendChild(link)
     link.click()
     document.body.removeChild(link)
-    
-    setSuccess(`Video ${video.index} download started...`)
+
     setTimeout(() => setSuccess(""), 3000)
+    setSuccess(`Video downloaded successfully!`)
   }
 
   return (
     <div className="bg-background w-full flex items-center justify-center py-8 sm:py-12">
       <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 w-full">
-        <div className="space-y-8">
+        <div className="text-center space-y-6">
           {/* Header */}
-          <div className="text-center space-y-4">
+          <div className="space-y-2">
             <h1 className="text-3xl sm:text-4xl font-bold text-foreground">
-              <span className="text-primary">Threads</span> Video Downloader
+              Easily download any <span className="text-primary">Threads</span> Video
             </h1>
             <p className="text-base text-muted-foreground">
-              Easily download videos from Threads platform.
+              Just paste the link to download videos with one click, completely free of charge.
             </p>
           </div>
 
@@ -186,23 +311,23 @@ export default function ThreadsExtractor() {
             <form onSubmit={handleSubmit} className="flex flex-col sm:flex-row gap-3">
               <Input
                 type="url"
+                placeholder="Enter a Threads Link"
                 value={url}
                 onChange={(e) => setUrl(e.target.value)}
-                placeholder="Enter a Threads link..."
-                className="flex-1"
                 disabled={isLoading}
+                className="flex-1 h-12 px-4 text-base border-2 border-border focus:border-primary text-foreground placeholder:text-placeholder"
               />
-              <Button 
+                <Button 
                 type="submit" 
+                className="h-12 px-8 bg-primary hover:bg-primary/90 text-primary-foreground font-bold sm:flex-shrink-0" 
                 disabled={isLoading}
-                className="sm:w-auto w-full"
-              >
+                >
                 {isLoading ? (
                   <Loader2 className="h-4 w-4 animate-spin" />
                 ) : (
-                  <span className="font-bold">Extract</span>
+                  <span className="font-bold">Load</span>
                 )}
-              </Button>
+                </Button>
             </form>
 
             {/* Error message */}
@@ -218,11 +343,38 @@ export default function ThreadsExtractor() {
                 {success}
               </div>
             )}
+
+            {/* Loading Progress */}
+            {isLoading && (
+              <div className="bg-card border border-border rounded-lg p-6 space-y-4">
+                {/* Progress Bar */}
+                <div className="space-y-2">
+                  <div className="flex justify-between items-center">
+                    <span className="text-sm font-medium text-foreground">Extraction Progress</span>
+                    <span className="text-sm text-muted-foreground">{Math.round(currentProgress)}%</span>
+                  </div>
+                  <div className="w-full bg-muted rounded-full h-2">
+                    <div 
+                      className="bg-primary h-2 rounded-full transition-all duration-500 ease-out"
+                      style={{ width: `${currentProgress}%` }}
+                    ></div>
+                  </div>
+                </div>
+                
+                {/* Loading Tips */}
+                <div className="mt-4 p-3 bg-muted/50 rounded-lg">
+                    <p className="text-xs text-muted-foreground text-center">
+                    💡 Tip: Video extraction may take a few moments, please be patient.
+                    </p>
+                </div>
+              </div>
+            )}
+
           </div>
 
           {/* Video Result Card */}
           {videos.length > 0 && (
-            <div className="max-w-2xl mx-auto">
+            <div className="max-w-2xl mx-auto mb-8">
               <div className="border border-border rounded-lg overflow-hidden bg-card">
                 {/* Video Thumbnail */}
                 {videoMetadata?.thumbnail_url && (
@@ -233,75 +385,56 @@ export default function ThreadsExtractor() {
                       fill
                       className="object-cover"
                       sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
-                      onError={() => {
-                        console.log('Image failed to load:', videoMetadata.thumbnail_url);
-                      }}
-                      onLoad={() => {
-                        console.log('Image loaded successfully:', videoMetadata.thumbnail_url);
-                      }}
                     />
                   </div>
                 )}
                 
                 <div className="p-6 space-y-4">
-                  {/* Post Content or Video Title */}
-                  {(videoMetadata?.post_content || videoMetadata?.title) && (
-                    <div className="space-y-2">
-                      <h3 className="font-medium text-foreground text-lg leading-snug">
-                        {videoMetadata.post_content || videoMetadata.title}
-                      </h3>
-                    </div>
-                  )}
-                  
-                  {/* Author Information */}
-                  {userProfile && (
-                    <div className="flex items-center gap-3">
-                      {userProfile.avatar_url && (
-                        <div className="relative w-10 h-10">
-                          <Image
-                            src={getProxiedImageUrl(userProfile.avatar_url)}
-                            alt="Author"
-                            width={40}
-                            height={40}
-                            className="rounded-full object-cover"
-                            sizes="40px"
-                            onError={() => {
-                              console.log('Avatar failed to load:', userProfile.avatar_url);
-                            }}
-                          />
-                        </div>
-                      )}
-                      <div className="flex-1">
-                        <div className="flex items-center gap-2">
-                          {userProfile.display_name && (
-                            <span className="font-medium text-foreground text-sm">
-                              {userProfile.display_name}
-                            </span>
-                          )}
-                          {userProfile.username && (
-                            <span className="text-muted-foreground text-sm">
-                              @{userProfile.username}
-                            </span>
-                          )}
-                        </div>
-                        {userProfile.followers_count && (
-                          <span className="text-muted-foreground text-xs">
-                            {userProfile.followers_count.toLocaleString()} followers
+                {/* Post Content or Video Title */}
+                {(videoMetadata?.post_content || videoMetadata?.title) && (
+                  <div className="space-y-2">
+                    <h3 className="font-medium text-foreground text-lg leading-snug">
+                      {videoMetadata.post_content || videoMetadata.title}
+                    </h3>
+                  </div>
+                )}
+                
+                {/* Author Information */}
+                {userProfile && (
+                  <div className="flex items-center gap-3">
+                    {userProfile.avatar_url && (
+                      <div className="relative w-10 h-10">
+                        <Image
+                          src={getProxiedImageUrl(userProfile.avatar_url)}
+                          alt="Author"
+                          width={40}
+                          height={40}
+                          className="rounded-full object-cover"
+                          sizes="40px"
+                        />
+                      </div>
+                    )}
+                    <div className="flex-1">
+                      <div className="flex items-center gap-2">
+                        {userProfile.username && (
+                          <span className="text-muted-foreground text-sm">
+                            from @{userProfile.username}
                           </span>
                         )}
                       </div>
                     </div>
-                  )}
-                  
-                  {/* Download Button */}
-                  <Button
-                    onClick={() => downloadVideo(videos[0])}
-                    className="w-full"
-                    size="lg"
-                  >
-                    <Download className="h-4 w-4 mr-2" />
-                    <span className="font-bold">Download Video</span>
-                  </Button>
+                  </div>
+                )}
+                
+                {/* Download Button */}
+                <Button
+                  onClick={() => downloadVideo(videos[0])}
+                  className="w-full"
+                  size="lg"
+                >
+                  <Download className="h-4 w-4 mr-2" />
+                  <span className="font-bold">Download Video</span>
+                </Button>
                 </div>
               </div>
             </div>
