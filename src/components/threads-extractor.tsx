@@ -28,7 +28,7 @@ interface VideoMetadata {
 interface ApiResponse {
   success: boolean
   message: string
-  videos?: string[]
+  videos?: VideoData[]
   user_profile?: UserProfile
   video_metadata?: VideoMetadata
 }
@@ -52,8 +52,10 @@ export default function ThreadsExtractor() {
   const [loadingSteps, setLoadingSteps] = useState<LoadingStep[]>([])
   const [currentProgress, setCurrentProgress] = useState(0)
 
-  // Get backend URL from environment variable
-  const backendUrl = process.env.NEXT_PUBLIC_BACKEND_URL || 'http://localhost:8080'
+  // Get backend URL from environment variable or use internal API
+  const backendUrl =  ''
+  // const backendUrl = process.env.NEXT_PUBLIC_BACKEND_URL || ''
+  const useInternalAPI = !backendUrl // 如果没有设置外部后端URL，使用内部API
 
   // Define extraction steps
   const extractionSteps: LoadingStep[] = [
@@ -194,7 +196,10 @@ export default function ThreadsExtractor() {
       updateStepStatus('connect', 'active')
       await new Promise(resolve => setTimeout(resolve, 300))
       
-      const response = await fetch(`${backendUrl}/extract`, {
+      // 使用内部 API 或外部后端
+      const apiUrl = backendUrl ? `${backendUrl}/extract` : '/api/extract'
+      
+      const response = await fetch(apiUrl, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -227,6 +232,7 @@ export default function ThreadsExtractor() {
         await new Promise(resolve => setTimeout(resolve, 400))
 
         // Set user profile if available
+        console.log("🚀 ~ handleSubmit ~ data.user_profile:", data.user_profile)
         if (data.user_profile) {
           setUserProfile(data.user_profile)
         }
@@ -238,12 +244,7 @@ export default function ThreadsExtractor() {
         
         // Set videos if available
         if (data.videos && data.videos.length > 0) {
-          // Only show the first video as it's typically the most accurate
-          const videoData = [{
-            url: data.videos[0],
-            index: 1,
-          }]
-          setVideos(videoData)
+          setVideos(data.videos)
         }
         
         updateStepStatus('process', 'completed')
@@ -266,30 +267,45 @@ export default function ThreadsExtractor() {
   }
 
 
-  const getProxiedImageUrl = (originalUrl: string) => {
-    // Use proxy for external images to avoid CORS issues
-    if (originalUrl && (originalUrl.includes('cdninstagram.com') || originalUrl.includes('threads.net'))) {
-      return `${backendUrl}/proxy-image?url=${encodeURIComponent(originalUrl)}`
-    }
-    return originalUrl
-  }
-
   const downloadVideo = async (video: VideoData) => {
-    const encodedUrl = encodeURIComponent(video.url)
-    const downloadUrl = `${backendUrl}/download?url=${encodedUrl}`
-
-
-    const link = document.createElement("a")
-    link.href = downloadUrl
-    link.download = `threads_video.mp4`
-    link.style.display = "none"
-    
-    document.body.appendChild(link)
-    link.click()
-    document.body.removeChild(link)
-
-    setTimeout(() => setSuccess(""), 3000)
-    setSuccess(`Video downloaded successfully!`)
+    try {
+      setSuccess("Starting Puppeteer download...")
+      
+      console.log("🚀 开始使用 Puppeteer 下载:", video.url.substring(0, 60) + '...')
+      
+      // 使用 Puppeteer 下载 API，传递视频URL和原始页面URL
+      const downloadUrl = `/api/download-puppeteer?videoUrl=${encodeURIComponent(video.url)}&threadUrl=${encodeURIComponent(url)}`
+      
+      console.log('🎯 使用 Puppeteer 下载方案')
+      
+      // 创建下载链接并触发下载
+      const link = document.createElement("a")
+      link.href = downloadUrl
+      link.download = `threads_video_${Date.now()}.mp4`
+      link.style.display = "none"
+      
+      document.body.appendChild(link)
+      link.click()
+      document.body.removeChild(link)
+      
+      // 显示成功消息
+      setSuccess("Puppeteer download started! This method maintains browser session for better compatibility.")
+      setTimeout(() => setSuccess(""), 8000)
+      
+    } catch (error) {
+      console.error("Download error:", error)
+      setError("Puppeteer download failed. The video will open in a new tab as fallback.")
+      
+      // 降级方案：直接打开视频链接
+      try {
+        window.open(video.url.replace(/\\u0026/g, '&').replace(/\\\//g, '/'), '_blank')
+        setSuccess("Video opened in new tab. Right-click and save to download.")
+      } catch (fallbackError) {
+        console.error("Fallback error:", fallbackError)
+      }
+      
+      setTimeout(() => setError(""), 8000)
+    }
   }
 
   return (
@@ -380,7 +396,7 @@ export default function ThreadsExtractor() {
                 {videoMetadata?.thumbnail_url && (
                   <div className="relative aspect-video bg-muted">
                     <Image
-                      src={getProxiedImageUrl(videoMetadata.thumbnail_url)}
+                      src={videoMetadata.thumbnail_url}
                       alt="Video thumbnail"
                       fill
                       className="object-cover"
@@ -405,7 +421,7 @@ export default function ThreadsExtractor() {
                     {userProfile.avatar_url && (
                       <div className="relative w-10 h-10">
                         <Image
-                          src={getProxiedImageUrl(userProfile.avatar_url)}
+                          src="https://scontent-sjc3-1.cdninstagram.com/v/t51.2885-19/387672530_312938124793049_5075608873909533180_n.jpg?stp=dst-jpg_s150x150_tt6&_nc_ht=scontent-sjc3-1.cdninstagram.com&_nc_cat=105&_nc_oc=Q6cZ2QGpEtW6rMg7bklKA3fHYhI5rTh1MhgXvfRIn_PXlKSdKduwyB9dXdDQBlKJPj051mI&_nc_ohc=9V_MizkbEDUQ7kNvwHJPyt3&_nc_gid=19hk1qi9C7dMGNSZD2b94g&edm=APs17CUBAAAA&ccb=7-5&oh=00_AfQr_iDgowLo_RXuwscl1LoQ9bClevYTwGNNA67oxXKPQQ&oe=6885202B&_nc_sid=10d13b"
                           alt="Author"
                           width={40}
                           height={40}
