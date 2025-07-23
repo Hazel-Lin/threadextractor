@@ -17,8 +17,11 @@ const getPuppeteerConfig = async () => {
         '--disable-web-security',
         '--disable-features=VizDisplayCompositor',
       ],
-      defaultViewport: chromium.defaultViewport,
-      headless: chromium.headless,
+      defaultViewport: {
+        width: 1920,
+        height: 1080
+      },
+      headless: true,
     }
   } else {
     // 本地开发环境配置
