@@ -1,22 +1,44 @@
 import puppeteer, { Page } from 'puppeteer'
+import chromium from '@sparticuz/chromium'
 import type { VideoData, UserProfile, VideoMetadata, ExtractResult } from './types'
 
+// 检测是否为 Vercel 环境
+const isProduction = process.env.NODE_ENV === 'production'
+
 // Puppeteer 配置
-const PUPPETEER_CONFIG = {
-  headless: true,
-  args: [
-    '--no-sandbox',
-    '--disable-setuid-sandbox',
-    '--disable-dev-shm-usage',
-    '--disable-gpu',
-    '--disable-web-security',
-    '--disable-features=VizDisplayCompositor',
-    '--no-first-run',
-    '--single-process'
-  ],
-  defaultViewport: {
-    width: 1920,
-    height: 1080
+const getPuppeteerConfig = async () => {
+  if (isProduction) {
+    // Vercel 环境配置
+    return {
+      executablePath: await chromium.executablePath(),
+      args: [
+        ...chromium.args,
+        '--hide-scrollbars',
+        '--disable-web-security',
+        '--disable-features=VizDisplayCompositor',
+      ],
+      defaultViewport: chromium.defaultViewport,
+      headless: chromium.headless,
+    }
+  } else {
+    // 本地开发环境配置
+    return {
+      headless: true,
+      args: [
+        '--no-sandbox',
+        '--disable-setuid-sandbox',
+        '--disable-dev-shm-usage',
+        '--disable-gpu',
+        '--disable-web-security',
+        '--disable-features=VizDisplayCompositor',
+        '--no-first-run',
+        '--single-process'
+      ],
+      defaultViewport: {
+        width: 1920,
+        height: 1080
+      }
+    }
   }
 }
 
@@ -30,7 +52,8 @@ export async function extractThreadsData(threadUrl: string): Promise<ExtractResu
   
   try {
     // 启动浏览器
-    browser = await puppeteer.launch(PUPPETEER_CONFIG)
+    const config = await getPuppeteerConfig()
+    browser = await puppeteer.launch(config)
     console.log('✅ 浏览器启动成功')
     
     const page = await browser.newPage()
