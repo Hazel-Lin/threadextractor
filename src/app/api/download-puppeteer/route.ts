@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 import puppeteer from 'puppeteer'
+import chromium from '@sparticuz/chromium'
 
 export async function GET(request: NextRequest) {
   console.log('🎬 收到 Puppeteer 视频下载请求')
@@ -18,15 +19,51 @@ export async function GET(request: NextRequest) {
 
     console.log('🎯 下载参数:', { threadUrl: threadUrl?.substring(0, 50), videoUrl: videoUrl?.substring(0, 50) })
 
-    const browser = await puppeteer.launch({
-      headless: true,
-      args: [
-        '--no-sandbox',
-        '--disable-setuid-sandbox',
-        '--disable-dev-shm-usage',
-        '--disable-gpu'
-      ]
-    })
+    // 检测是否为 Vercel 环境
+    const isProduction = process.env.NODE_ENV === 'production'
+    
+    // Puppeteer 配置 - 与 extractor.ts 保持一致
+    const getPuppeteerConfig = async () => {
+      if (isProduction) {
+        // Vercel 环境配置
+        return {
+          executablePath: await chromium.executablePath(),
+          args: [
+            ...chromium.args,
+            '--hide-scrollbars',
+            '--disable-web-security',
+            '--disable-features=VizDisplayCompositor',
+          ],
+          defaultViewport: {
+            width: 1920,
+            height: 1080
+          },
+          headless: true,
+        }
+      } else {
+        // 本地开发环境配置
+        return {
+          headless: true,
+          args: [
+            '--no-sandbox',
+            '--disable-setuid-sandbox',
+            '--disable-dev-shm-usage',
+            '--disable-gpu',
+            '--disable-web-security',
+            '--disable-features=VizDisplayCompositor',
+            '--no-first-run',
+            '--single-process'
+          ],
+          defaultViewport: {
+            width: 1920,
+            height: 1080
+          }
+        }
+      }
+    }
+
+    const config = await getPuppeteerConfig()
+    const browser = await puppeteer.launch(config)
 
     try {
       const page = await browser.newPage()
@@ -89,113 +126,141 @@ export async function GET(request: NextRequest) {
         .replace(/\\\//g, '/')
         .replace(/\\/g, '')
 
-      console.log('🎥 开始使用 Puppeteer 拦截网络请求下载视频...')
+      console.log('🎥 开始智能下载策略...')
 
-      // 方案1: 使用 Puppeteer 网络拦截下载（最可靠）
+      // 优化下载策略：避免签名验证问题
       let videoBuffer: Buffer | null = null
       let responseHeaders: Record<string, string> = {}
 
-      // 启用请求拦截
-      await page.setRequestInterception(true)
-      
-      // 拦截视频请求
-      page.on('response', async (response) => {
-        const url = response.url()
-        if (url.includes(finalVideoUrl) || (url.includes('cdninstagram.com') && url.includes('.mp4'))) {
-          console.log('🎯 拦截到视频响应:', url.substring(0, 80) + '...')
-          console.log('📊 响应状态:', response.status())
-          
-          if (response.ok()) {
-            try {
-              const buffer = await response.buffer()
-              const headers = response.headers()
-              
-              videoBuffer = buffer
-              responseHeaders = {
-                'content-type': headers['content-type'] || 'video/mp4',
-                'content-length': headers['content-length'] || buffer.length.toString()
+      // 方案1: 首先尝试直接在页面上下文中下载（避免跨域和签名问题）
+      try {
+        console.log('🚀 尝试页面内下载策略...')
+        
+        interface DownloadResult {
+          success: boolean
+          data?: number[]
+          contentType?: string
+          size?: number
+          error?: string
+        }
+        
+        const downloadResult = await page.evaluate(async (url): Promise<DownloadResult> => {
+          try {
+            console.log('🎯 在页面内发送请求:', url.substring(0, 80))
+            
+            const response = await fetch(url, {
+              method: 'GET',
+              headers: {
+                'Accept': 'video/webm,video/ogg,video/*;q=0.9,application/ogg;q=0.7,audio/*;q=0.6,*/*;q=0.5',
+                'Accept-Language': 'en-US,en;q=0.9',
+                'Cache-Control': 'no-cache',
+                'Pragma': 'no-cache',
+                'Sec-Fetch-Dest': 'video',
+                'Sec-Fetch-Mode': 'cors',
+                'Sec-Fetch-Site': 'cross-site'
               }
+            })
+            
+            if (response.ok) {
+              const arrayBuffer = await response.arrayBuffer()
+              const contentType = response.headers.get('content-type') || 'video/mp4'
               
-              console.log('✅ 视频数据拦截成功:', {
-                size: `${(buffer.length / 1024 / 1024).toFixed(2)}MB`,
-                contentType: headers['content-type']
-              })
-            } catch (bufferError) {
-              console.error('❌ 获取响应数据失败:', bufferError)
+              return {
+                success: true,
+                data: Array.from(new Uint8Array(arrayBuffer)),
+                contentType: contentType,
+                size: arrayBuffer.byteLength
+              }
+            } else {
+              return {
+                success: false,
+                error: `HTTP ${response.status}: ${response.statusText}`
+              }
+            }
+          } catch (error) {
+            return {
+              success: false,
+              error: error instanceof Error ? error.message : 'Unknown error'
             }
           }
-        }
-      })
+        }, finalVideoUrl)
 
-      // 处理请求拦截
-      page.on('request', (request) => {
-        // 允许所有请求继续
-        request.continue()
-      })
-
-      // 导航到视频URL触发下载
-      try {
-        console.log('🌐 导航到视频URL触发网络请求...')
-        await page.goto(finalVideoUrl, { 
-          waitUntil: 'networkidle0', 
-          timeout: 30000 
-        })
-        
-        // 等待一段时间确保视频加载
-        await new Promise(resolve => setTimeout(resolve, 3000))
-        
-      } catch {
-        console.log('⚠️ 直接导航失败，尝试在页面中触发请求...')
-        
-        // 方案2: 在页面上下文中使用XMLHttpRequest
-        try {
-          interface DownloadResult {
-            data: number[]
-            contentType: string
-            size: number
+        if (downloadResult.success && downloadResult.data) {
+          videoBuffer = Buffer.from(downloadResult.data)
+          responseHeaders = {
+            'content-type': downloadResult.contentType || 'video/mp4',
+            'content-length': downloadResult.size?.toString() || videoBuffer.length.toString()
           }
+          console.log('✅ 页面内下载成功:', {
+            size: `${(videoBuffer.length / 1024 / 1024).toFixed(2)}MB`,
+            contentType: downloadResult.contentType
+          })
+        } else {
+          console.log('⚠️ 页面内下载失败:', downloadResult.error)
+          throw new Error(downloadResult.error || 'Page download failed')
+        }
+        
+      } catch (pageDownloadError) {
+        console.log('⚠️ 页面内下载失败，尝试网络拦截方案...')
+        
+        // 方案2: 使用 Puppeteer 网络拦截下载（备用方案）
+        try {
+          // 启用请求拦截
+          await page.setRequestInterception(true)
           
-          const downloadResult = await page.evaluate(async (url): Promise<DownloadResult> => {
-            return new Promise((resolve, reject) => {
-              const xhr = new XMLHttpRequest()
-              xhr.open('GET', url, true)
-              xhr.responseType = 'arraybuffer'
+          // 拦截视频请求
+          page.on('response', async (response) => {
+            const url = response.url()
+            if (url.includes('cdninstagram.com') && url.includes('.mp4')) {
+              console.log('🎯 拦截到视频响应:', url.substring(0, 80) + '...')
+              console.log('📊 响应状态:', response.status())
               
-              xhr.onload = function() {
-                if (xhr.status === 200) {
-                  const arrayBuffer = xhr.response
-                  const contentType = xhr.getResponseHeader('content-type') || 'video/mp4'
-                  resolve({
-                    data: Array.from(new Uint8Array(arrayBuffer)),
-                    contentType: contentType,
-                    size: arrayBuffer.byteLength
+              if (response.ok() && !videoBuffer) {
+                try {
+                  const buffer = await response.buffer()
+                  const headers = response.headers()
+                  
+                  videoBuffer = buffer
+                  responseHeaders = {
+                    'content-type': headers['content-type'] || 'video/mp4',
+                    'content-length': headers['content-length'] || buffer.length.toString()
+                  }
+                  
+                  console.log('✅ 网络拦截成功:', {
+                    size: `${(buffer.length / 1024 / 1024).toFixed(2)}MB`,
+                    contentType: headers['content-type']
                   })
-                } else {
-                  reject(new Error(`HTTP ${xhr.status}: ${xhr.statusText}`))
+                } catch (bufferError) {
+                  console.error('❌ 获取响应数据失败:', bufferError)
                 }
               }
-              
-              xhr.onerror = function() {
-                reject(new Error('Network error'))
-              }
-              
-              xhr.send()
-            })
-          }, finalVideoUrl)
-
-          if (downloadResult && downloadResult.data) {
-            videoBuffer = Buffer.from(downloadResult.data)
-            responseHeaders = {
-              'content-type': downloadResult.contentType,
-              'content-length': downloadResult.size.toString()
             }
-            console.log('✅ XMLHttpRequest 下载成功:', {
-              size: `${(downloadResult.size / 1024 / 1024).toFixed(2)}MB`,
-              contentType: downloadResult.contentType
-            })
+          })
+
+          // 处理请求拦截
+          page.on('request', (request) => {
+            request.continue()
+          })
+
+          // 如果有 threadUrl，重新访问原始页面触发请求
+          if (threadUrl) {
+            console.log('🌐 重新访问原始页面触发视频请求...')
+            await page.goto(threadUrl, { waitUntil: 'networkidle2', timeout: 30000 })
+            await new Promise(resolve => setTimeout(resolve, 5000))
+          } else {
+            // 直接访问视频URL
+            console.log('🌐 直接访问视频URL...')
+            await page.goto(finalVideoUrl, { waitUntil: 'networkidle0', timeout: 30000 })
+            await new Promise(resolve => setTimeout(resolve, 3000))
           }
-        } catch (xhrError) {
-          console.error('❌ XMLHttpRequest 下载也失败:', xhrError)
+          
+          if (!videoBuffer) {
+            throw new Error('网络拦截未获取到视频数据')
+          }
+          
+        } catch (interceptError) {
+          console.error('❌ 网络拦截方案也失败:', interceptError)
+          throw new Error('所有下载方案都失败')
         }
       }
 
