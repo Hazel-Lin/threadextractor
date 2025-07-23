@@ -82,7 +82,7 @@ export async function GET(request: NextRequest) {
       console.log(`📄 响应Content-Type: ${response.headers.get('content-type')}`)
       
     } catch (fetchError) {
-      console.error('❌ 视频获取失败:', fetchError.message)
+      console.error('❌ 视频获取失败:', fetchError instanceof Error ? fetchError.message : String(fetchError))
       
       // 对于Instagram/Threads的签名问题，直接重定向是最好的解决方案
       console.log('🔄 获取失败，重定向到原始URL让浏览器直接处理')

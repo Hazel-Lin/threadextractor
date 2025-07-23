@@ -55,7 +55,6 @@ export default function ThreadsExtractor() {
   // Get backend URL from environment variable or use internal API
   const backendUrl =  ''
   // const backendUrl = process.env.NEXT_PUBLIC_BACKEND_URL || ''
-  const useInternalAPI = !backendUrl // 如果没有设置外部后端URL，使用内部API
 
   // Define extraction steps
   const extractionSteps: LoadingStep[] = [

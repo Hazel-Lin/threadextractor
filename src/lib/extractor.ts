@@ -1,4 +1,4 @@
-import puppeteer from 'puppeteer'
+import puppeteer, { Page } from 'puppeteer'
 import type { VideoData, UserProfile, VideoMetadata, ExtractResult } from './types'
 
 // Puppeteer 配置
@@ -84,7 +84,7 @@ export async function extractThreadsData(threadUrl: string): Promise<ExtractResu
 }
 
 // 提取视频URL - 完全参考Python实现，只获取1个有效URL
-async function extractVideoUrls(html: string, page: any): Promise<VideoData[]> {
+async function extractVideoUrls(html: string, page: Page): Promise<VideoData[]> {
   console.log('🎥 正在提取视频URL...')
   
   // 使用与Python完全相同的正则表达式模式
@@ -180,40 +180,6 @@ async function extractVideoUrls(html: string, page: any): Promise<VideoData[]> {
   }
 }
 
-// 验证视频URL是否有效（完全参考Python实现）
-async function validateVideoUrlSimple(url: string, cookies: Record<string, string> = {}): Promise<boolean> {
-  try {
-    const headers = {
-      'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36',
-      'Accept': 'video/webm,video/ogg,video/*;q=0.9,application/ogg;q=0.7,audio/*;q=0.6,*/*;q=0.5',
-      'Accept-Language': 'en-US,en;q=0.5',
-      'Accept-Encoding': 'gzip, deflate',
-      'Connection': 'keep-alive',
-      'Upgrade-Insecure-Requests': '1'
-    }
-    
-    // 发送HEAD请求检查视频是否可访问
-    const response = await fetch(url, {
-      method: 'HEAD',
-      headers,
-      signal: AbortSignal.timeout(10000) // 10秒超时
-    })
-    
-    if (response.ok) {
-      const contentType = response.headers.get('content-type') || ''
-      const isVideo = contentType.toLowerCase().includes('video')
-      console.log(`📊 URL验证结果: 状态=${response.status}, Content-Type=${contentType}, 是视频=${isVideo}`)
-      return isVideo
-    }
-    
-    console.log(`❌ URL验证失败: HTTP ${response.status}`)
-    return false
-    
-  } catch (error) {
-    console.warn(`⚠️ URL验证异常: ${error}`)
-    return false
-  }
-}
 
 // 提取用户信息 - 参考Python实现优化
 async function extractUserProfile(html: string): Promise<UserProfile> {
