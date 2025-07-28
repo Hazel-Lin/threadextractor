@@ -48,7 +48,6 @@ export default function ThreadsExtractor() {
   const [videoMetadata, setVideoMetadata] = useState<VideoMetadata | null>(null)
   const [error, setError] = useState("")
   const [success, setSuccess] = useState("")
-  const [useMockData] = useState(false) // 禁用 Mock 数据，使用真实API
   const [loadingSteps, setLoadingSteps] = useState<LoadingStep[]>([])
   const [currentProgress, setCurrentProgress] = useState(0)
 
@@ -56,90 +55,11 @@ export default function ThreadsExtractor() {
   const backendUrl =  ''
   // const backendUrl = process.env.NEXT_PUBLIC_BACKEND_URL || ''
 
-  // Define extraction steps
-  const extractionSteps: LoadingStep[] = [
-    {
-      id: 'validate',
-      label: '验证链接',
-      status: 'pending',
-      description: '检查 Threads 链接格式'
-    },
-    {
-      id: 'connect',
-      label: '连接服务器',
-      status: 'pending',
-      description: '建立与后端服务的连接'
-    },
-    {
-      id: 'parse',
-      label: '解析页面',
-      status: 'pending',
-      description: '获取页面内容和元数据'
-    },
-    {
-      id: 'extract',
-      label: '提取视频',
-      status: 'pending',
-      description: '定位并提取视频文件'
-    },
-    {
-      id: 'process',
-      label: '处理数据',
-      status: 'pending',
-      description: '整理用户信息和视频信息'
-    }
-  ]
 
   const updateStepStatus = (stepId: string, status: LoadingStep['status']) => {
     setLoadingSteps(prev => prev.map(step => 
       step.id === stepId ? { ...step, status } : step
     ))
-  }
-
-  const simulateProgress = () => {
-    setLoadingSteps([...extractionSteps])
-    let currentStep = 0
-    const totalSteps = extractionSteps.length
-
-    const progressInterval = setInterval(() => {
-      if (currentStep < totalSteps) {
-        // Mark current step as active
-        updateStepStatus(extractionSteps[currentStep].id, 'active')
-        
-        // Update progress
-        setCurrentProgress(((currentStep + 1) / totalSteps) * 100)
-        
-        // Mark previous step as completed after a delay
-        setTimeout(() => {
-          updateStepStatus(extractionSteps[currentStep].id, 'completed')
-          currentStep++
-        }, 800)
-      } else {
-        clearInterval(progressInterval)
-      }
-    }, 1000)
-
-    return progressInterval
-  }
-
-  // Mock data for testing
-  const mockVideoData: VideoData[] = [{
-    url: "https://video.threads.net/v/example_video_thread_12345.mp4",
-    index: 1,
-  }]
-
-  const mockUserProfile: UserProfile = {
-    username: "example_user",
-    display_name: "Example User",
-    avatar_url: "https://example.com/avatar.jpg",
-    followers_count: 1234,
-    bio: "This is an example bio for testing purposes."
-  }
-
-  const mockVideoMetadata: VideoMetadata = {
-    title: "Check out this amazing video from Threads! 🎥✨",
-    thumbnail_url: "https://example.com/thumbnail.jpg",
-    post_content: "Just sharing this incredible moment! Can't believe how beautiful this sunset looks. What do you think? 🌅 #sunset #nature #beautiful"
   }
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -163,26 +83,6 @@ export default function ThreadsExtractor() {
     setVideoMetadata(null)
     setCurrentProgress(0)
 
-    // Initialize loading steps
-    setLoadingSteps([...extractionSteps])
-
-    // Start progress simulation
-    let progressInterval: NodeJS.Timeout
-
-    // Use mock data if enabled
-    if (useMockData) {
-      progressInterval = simulateProgress()
-      
-      setTimeout(() => {
-        clearInterval(progressInterval)
-        setVideos(mockVideoData)
-        setUserProfile(mockUserProfile)
-        setVideoMetadata(mockVideoMetadata)
-        setSuccess("Video extracted successfully!")
-        setIsLoading(false)
-      }, 5000) // Simulate realistic loading time
-      return
-    }
 
     try {
       // Step 1: Validate URL
@@ -268,42 +168,40 @@ export default function ThreadsExtractor() {
 
   const downloadVideo = async (video: VideoData) => {
     try {
-      setSuccess("Starting Puppeteer download...")
-      
-      console.log("🚀 开始使用 Puppeteer 下载:", video.url.substring(0, 60) + '...')
-      
-      // 使用 Puppeteer 下载 API，传递视频URL和原始页面URL
+      setIsLoading(true)
+      setSuccess("Initiating download...")
+
+      console.log("🚀 Starting download:", video.url.substring(0, 60) + '...')
+
       const downloadUrl = `/api/download-puppeteer?videoUrl=${encodeURIComponent(video.url)}&threadUrl=${encodeURIComponent(url)}`
-      
-      console.log('🎯 使用 Puppeteer 下载方案')
-      
-      // 创建下载链接并触发下载
+
+      console.log('🎯 Preparing for download')
+
       const link = document.createElement("a")
       link.href = downloadUrl
       link.download = `threads_video_${Date.now()}.mp4`
       link.style.display = "none"
-      
+
       document.body.appendChild(link)
       link.click()
       document.body.removeChild(link)
-      
-      // 显示成功消息
-      setSuccess("Puppeteer download started! This method maintains browser session for better compatibility.")
+
+      setSuccess("Your download has started! This method preserves your browser session for improved compatibility.")
       setTimeout(() => setSuccess(""), 8000)
-      
+      setTimeout(() => setIsLoading(false), 8000)
+
     } catch (error) {
       console.error("Download error:", error)
-      setError("Puppeteer download failed. The video will open in a new tab as fallback.")
-      
-      // 降级方案：直接打开视频链接
+      setError("Download failed. The video will open in a new tab as a fallback.")
+
       try {
         window.open(video.url.replace(/\\u0026/g, '&').replace(/\\\//g, '/'), '_blank')
-        setSuccess("Video opened in new tab. Right-click and save to download.")
+        setSuccess("The video has been opened in a new tab. Right-click to save it.")
+        setTimeout(() => setIsLoading(false), 8000)
       } catch (fallbackError) {
         console.error("Fallback error:", fallbackError)
+        setTimeout(() => setIsLoading(false), 8000)
       }
-      
-      setTimeout(() => setError(""), 8000)
     }
   }
 
@@ -446,9 +344,14 @@ export default function ThreadsExtractor() {
                   onClick={() => downloadVideo(videos[0])}
                   className="w-full"
                   size="lg"
+                  disabled={isLoading}
                 >
-                  <Download className="h-4 w-4 mr-2" />
-                  <span className="font-bold">Download Video</span>
+                  {isLoading ? (
+                    <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                  ) : (
+                    <Download className="h-4 w-4 mr-2" />
+                  )}
+                  <span className="font-bold">{isLoading ? 'Downloading...' : 'Download Video'}</span>
                 </Button>
                 </div>
               </div>
