@@ -135,10 +135,17 @@ async function extractVideoUrls(html: string, page: Page): Promise<VideoData[]> 
     while ((match = pattern.exec(html)) !== null) {
       const url = match[1] || match[0]
       
-      // 清理URL格式 - 保持HTML实体编码（与Python一致）
-      const cleanUrl = url.replace(/\\\//g, '/')
+      // 更全面的URL清理 - 修复常见的编码问题
+      const cleanUrl = url
+        .replace(/\\\//g, '/')              // 反斜杠转义
+        .replace(/\\u0026/g, '&')           // Unicode转义的&符号
+        .replace(/\\"/g, '"')               // 转义引号
+        .replace(/\\n/g, '')                // 换行符
+        .replace(/\\t/g, '')                // 制表符
+        .replace(/\s+/g, '')                // 多余的空白字符
+        .trim()
       
-      if (cleanUrl && !videoUrls.includes(cleanUrl)) {
+      if (cleanUrl && cleanUrl.startsWith('https://') && cleanUrl.includes('.mp4') && !videoUrls.includes(cleanUrl)) {
         videoUrls.push(cleanUrl)
         console.log(`🔍 正则匹配找到URL: ${cleanUrl.substring(0, 80)}...`)
       }
@@ -181,28 +188,66 @@ async function extractVideoUrls(html: string, page: Page): Promise<VideoData[]> 
   console.log(`✅ 选择最佳URL: ${bestUrl.substring(0, 100)}...`)
   console.log(`📏 URL长度: ${bestUrl.length} 字符`)
   
-  // 修复HTML实体编码问题（解决Bad URL hash）
+  // 更全面的HTML实体和URL编码修复（解决Bad URL hash）
   const cleanedUrl = bestUrl
-    .replace(/&amp;/g, '&')  // 修复HTML实体编码 &amp; → &
-    .replace(/&quot;/g, '"')  // 修复引号实体编码
-    .replace(/&lt;/g, '<')   // 修复小于号实体编码
-    .replace(/&gt;/g, '>')   // 修复大于号实体编码
+    .replace(/&amp;/g, '&')               // 修复HTML实体编码 &amp; → &
+    .replace(/&quot;/g, '"')              // 修复引号实体编码
+    .replace(/&lt;/g, '<')               // 修复小于号实体编码
+    .replace(/&gt;/g, '>')               // 修复大于号实体编码
+    .replace(/&#x27;/g, "'")             // 修复单引号实体编码
+    .replace(/&#x2F;/g, '/')             // 修复斜杠实体编码
+    .replace(/\\u0026/g, '&')            // 修复Unicode转义的&符号
+    .replace(/%20/g, ' ')                // URL编码的空格
+    .replace(/%22/g, '"')                // URL编码的引号
+    .replace(/%27/g, "'")                // URL编码的单引号
+    .replace(/%2F/g, '/')                // URL编码的斜杠
+    .replace(/\s+/g, '')                 // 移除多余的空白字符
+    .trim()
   
   if (cleanedUrl !== bestUrl) {
     console.log('🔧 修复了HTML实体编码问题')
     console.log(`📏 修复后URL长度: ${cleanedUrl.length} 字符`)
   }
   
-  // 验证URL格式
-  if (cleanedUrl.includes('cdninstagram.com') && cleanedUrl.includes('.mp4')) {
-    console.log('✅ URL格式验证通过（Instagram CDN + MP4）')
-    return [{ url: cleanedUrl, index: 1 }]
-  } else if (cleanedUrl.includes('.mp4') && cleanedUrl.startsWith('https://')) {
-    console.log('✅ URL格式验证通过（HTTPS + MP4）')  
-    return [{ url: cleanedUrl, index: 1 }]
-  } else {
-    console.log('⚠️ URL格式可疑，但仍然返回')
-    return [{ url: cleanedUrl, index: 1 }]
+  // 更严格的URL验证和质量检查
+  try {
+    // 尝试创建URL对象来验证格式
+    const urlObj = new URL(cleanedUrl)
+    
+    // 检查协议和域名
+    if (urlObj.protocol !== 'https:') {
+      console.log('⚠️ URL协议不是HTTPS')
+      return []
+    }
+    
+    // 验证是否为视频文件
+    if (!urlObj.pathname.includes('.mp4') && !cleanedUrl.includes('.mp4')) {
+      console.log('⚠️ URL不包含.mp4扩展名')
+      return []
+    }
+    
+    // 优选Instagram CDN
+    if (cleanedUrl.includes('cdninstagram.com')) {
+      console.log('✅ URL格式验证通过（Instagram CDN + MP4）')
+      return [{ url: cleanedUrl, index: 1 }]
+    } 
+    // 其他HTTPS .mp4 URL也接受，但记录警告
+    else if (cleanedUrl.includes('.mp4') && cleanedUrl.startsWith('https://')) {
+      console.log('✅ URL格式验证通过（HTTPS + MP4）')  
+      return [{ url: cleanedUrl, index: 1 }]
+    } else {
+      console.log('❌ URL格式验证失败')
+      return []
+    }
+    
+  } catch (urlError) {
+    console.log('❌ URL格式无效:', urlError)
+    // 如果URL构造失败，尝试基础验证作为后备
+    if (cleanedUrl.includes('.mp4') && cleanedUrl.startsWith('https://')) {
+      console.log('⚠️ 使用后备验证，URL格式可疑但包含必要元素')
+      return [{ url: cleanedUrl, index: 1 }]
+    }
+    return []
   }
 }
 
