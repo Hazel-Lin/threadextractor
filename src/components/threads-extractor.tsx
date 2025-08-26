@@ -318,7 +318,7 @@ export default function ThreadsExtractor() {
                     {userProfile.avatar_url && (
                       <div className="relative w-10 h-10">
                         <Image
-                          src="https://scontent-sjc3-1.cdninstagram.com/v/t51.2885-19/387672530_312938124793049_5075608873909533180_n.jpg?stp=dst-jpg_s150x150_tt6&_nc_ht=scontent-sjc3-1.cdninstagram.com&_nc_cat=105&_nc_oc=Q6cZ2QGpEtW6rMg7bklKA3fHYhI5rTh1MhgXvfRIn_PXlKSdKduwyB9dXdDQBlKJPj051mI&_nc_ohc=9V_MizkbEDUQ7kNvwHJPyt3&_nc_gid=19hk1qi9C7dMGNSZD2b94g&edm=APs17CUBAAAA&ccb=7-5&oh=00_AfQr_iDgowLo_RXuwscl1LoQ9bClevYTwGNNA67oxXKPQQ&oe=6885202B&_nc_sid=10d13b"
+                          src={userProfile.avatar_url}
                           alt="Author"
                           width={40}
                           height={40}
