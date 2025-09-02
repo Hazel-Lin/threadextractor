@@ -1,4 +1,4 @@
-# Thread Extractor - 项目架构说明
+# Threads Extractor - 项目架构说明
 
 ## 项目架构选择：Flask 后端
 
@@ -28,7 +28,7 @@
 3. **安全的 CORS 配置**
    ```python
    # 仅允许特定来源
-   allowed_origins = ['http://localhost:3000', 'https://threadextractor.com']
+   allowed_origins = ['http://localhost:3000', 'https://threadsextractor.com']
    ```
 
 4. **代码清理**

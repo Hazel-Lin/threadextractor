@@ -32,7 +32,7 @@ export function PrivacySection() {
             <Alert className="border-primary/20 bg-primary/5">
               <Shield className="h-5 w-5 text-primary" />
               <AlertDescription className="text-base text-foreground">
-                <strong>Privacy Commitment:</strong> Thread Extractor uses complete client-side processing.
+                <strong>Privacy Commitment:</strong> Threads Extractor uses complete client-side processing.
                 We do not collect, store or transmit your personal information. All operations are completed locally in your browser.
               </AlertDescription>
             </Alert>

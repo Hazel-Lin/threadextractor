@@ -1,4 +1,4 @@
-# Thread Extractor - Threads 视频提取器
+# Threads Extractor - Threads 视频提取器
 
 一个基于 Next.js 和 shadcn/ui 的现代化 Threads 视频提取工具，支持一键提取和下载 Threads 平台的视频内容。
 
@@ -57,7 +57,7 @@ yarn start
 ## 📁 项目结构
 
 ```
-threadextractor/
+threadsextractor/
 ├── src/
 │   ├── app/                    # Next.js App Router
 │   │   ├── globals.css         # 全局样式
@@ -162,5 +162,5 @@ npm run start
 
 <div align="center">
   <p>⭐ 如果这个项目对你有帮助，请给我们一个星标！</p>
-  <p>Made with ❤️ by Thread Extractor Team</p>
+  <p>Made with ❤️ by Threads Extractor Team</p>
 </div>

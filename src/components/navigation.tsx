@@ -57,7 +57,7 @@ export function Navigation() {
           >
             <Logo className="w-12 h-12" />
             <span className="text-lg font-bold text-primary">
-              Thread Extractor
+              Threads Extractor
             </span>
           </button>
 

@@ -18,12 +18,12 @@ const jetbrainsMono = JetBrains_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "Thread Extractor - Threads 视频提取器",
-  description: "一键提取 Threads 视频下载链接，支持批量下载，简单易用的在线工具。Thread Extractor - Extract and download videos from Threads posts easily.",
+  title: "Threads Extractor - Threads 视频提取器",
+  description: "一键提取 Threads 视频下载链接，支持批量下载，简单易用的在线工具。Threads Extractor - Extract and download videos from Threads posts easily.",
   keywords: ["threads", "video", "extractor", "download", "threads.net", "社交媒体", "视频下载"],
-  authors: [{ name: "Thread Extractor Team" }],
-  creator: "Thread Extractor",
-  publisher: "Thread Extractor",
+  authors: [{ name: "Threads Extractor Team" }],
+  creator: "Threads Extractor",
+  publisher: "Threads Extractor",
   formatDetection: {
     email: false,
     address: false,
@@ -39,16 +39,16 @@ export const metadata: Metadata = {
     apple: "/logo.png",
   },
   openGraph: {
-    title: "Thread Extractor - Threads 视频提取器",
+    title: "Threads Extractor - Threads 视频提取器",
     description: "一键提取 Threads 视频下载链接，支持批量下载",
     url: "https://threadextractor.com",
-    siteName: "Thread Extractor",
+    siteName: "Threads Extractor",
     locale: "zh_CN",
     type: "website",
   },
   twitter: {
     card: "summary_large_image",
-    title: "Thread Extractor - Threads 视频提取器",
+    title: "Threads Extractor - Threads 视频提取器",
     description: "一键提取 Threads 视频下载链接，支持批量下载",
     creator: "@threadextractor",
   },

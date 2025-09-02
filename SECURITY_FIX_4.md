@@ -25,7 +25,7 @@ if __name__ == '__main__':
 
 #### **主配置文件 (gunicorn_config.py)**
 ```python
-# Gunicorn configuration file for Thread Extractor Backend
+# Gunicorn configuration file for Threads Extractor Backend
 import os
 import multiprocessing
 
@@ -65,7 +65,7 @@ preload_app = True
 #### **生产启动脚本 (start_production.sh)**
 ```bash
 #!/bin/bash
-# Production startup script for Thread Extractor Backend
+# Production startup script for Threads Extractor Backend
 
 set -e  # Exit on any error
 
@@ -325,7 +325,7 @@ curl -f http://127.0.0.1:8080/health
 
 ## 总结
 
-Thread Extractor Backend现在使用了生产级的Gunicorn WSGI服务器，完全替代了不安全的Flask开发服务器。新的配置提供了：
+Threads Extractor Backend现在使用了生产级的Gunicorn WSGI服务器，完全替代了不安全的Flask开发服务器。新的配置提供了：
 
 ### ✅ **关键改进**
 1. **生产就绪**: Gunicorn多进程架构
