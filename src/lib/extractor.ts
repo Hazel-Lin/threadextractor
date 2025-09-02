@@ -109,21 +109,26 @@ export async function extractThreadsData(threadUrl: string): Promise<ExtractResu
   }
 }
 
-// 提取视频URL - 完全参考Python实现，只获取1个有效URL
+// 提取视频URL - 智能优先级选择与验证
 async function extractVideoUrls(html: string, page: Page): Promise<VideoData[]> {
   console.log('🎥 正在提取视频URL...')
   
-  // 使用与Python完全相同的正则表达式模式
+  // 按优先级排序的正则表达式模式 - 视频相关关键词优先
   const patterns = [
+    // 高优先级：明确的视频URL模式
     /"video_url":"(https:[^"]*\.mp4[^"]*)"/g,
     /"playback_url":"(https:[^"]*\.mp4[^"]*)"/g,
-    /"src":"(https:[^"]*\.mp4[^"]*)"/g,
-    /<video[^>]*src="([^"]*\.mp4[^"]*)"/g,
-    /"videoUrl":"(https:[^"]*\.mp4[^"]*)"/g,
-    /"url":"(https:[^"]*\.mp4[^"]*)"/g,
-    /(https:\/\/[^"\s]*\.mp4[^"\s]*)/g,
     /"dash_prefetch_experimental":"(https:[^"]*\.mp4[^"]*)"/g,
-    /"video_dash_manifest":"(https:[^"]*\.mp4[^"]*)"/g
+    /"video_dash_manifest":"(https:[^"]*\.mp4[^"]*)"/g,
+    
+    // 中优先级：通用视频模式
+    /"videoUrl":"(https:[^"]*\.mp4[^"]*)"/g,
+    /<video[^>]*src="([^"]*\.mp4[^"]*)"/g,
+    
+    // 低优先级：通用URL模式
+    /"src":"(https:[^"]*\.mp4[^"]*)"/g,
+    /"url":"(https:[^"]*\.mp4[^"]*)"/g,
+    /(https:\/\/[^"\s]*\.mp4[^"\s]*)/g
   ]
 
   const videoUrls: string[] = []
@@ -135,7 +140,7 @@ async function extractVideoUrls(html: string, page: Page): Promise<VideoData[]> 
     while ((match = pattern.exec(html)) !== null) {
       const url = match[1] || match[0]
       
-      // 清理URL格式 - 保持HTML实体编码（与Python一致）
+      // 清理URL格式
       const cleanUrl = url.replace(/\\\//g, '/')
       
       if (cleanUrl && !videoUrls.includes(cleanUrl)) {
@@ -145,7 +150,7 @@ async function extractVideoUrls(html: string, page: Page): Promise<VideoData[]> 
     }
   }
   
-  // 第二步：直接从video元素获取src属性（与Python一致）
+  // 第二步：直接从video元素获取src属性
   try {
     const directVideoUrls = await page.evaluate(() => {
       const videos = Array.from(document.querySelectorAll('video'))
@@ -165,44 +170,187 @@ async function extractVideoUrls(html: string, page: Page): Promise<VideoData[]> 
     console.warn('获取video元素src失败:', error)
   }
   
-  // 第三步：选择最佳的URL（简化验证，优先返回第一个有效格式的URL）
-  console.log(`🔍 总共收集到 ${videoUrls.length} 个候选URL，开始选择...`)
+  console.log(`🔍 总共收集到 ${videoUrls.length} 个候选URL，开始智能评分...`)
   
   if (videoUrls.length === 0) {
     console.log('❌ 没有找到任何视频URL')
     return []
   }
   
-  // 优先选择最长的URL（通常包含完整的查询参数）
-  const bestUrl = videoUrls.reduce((longest, current) => 
-    current.length > longest.length ? current : longest
-  )
+  // 第三步：智能URL评分系统
+  const scoredUrls = videoUrls.map(url => ({
+    url,
+    score: calculateUrlScore(url)
+  })).sort((a, b) => b.score - a.score) // 按分数降序排序
   
-  console.log(`✅ 选择最佳URL: ${bestUrl.substring(0, 100)}...`)
-  console.log(`📏 URL长度: ${bestUrl.length} 字符`)
+  console.log('📊 URL评分结果:')
+  scoredUrls.forEach(({ url, score }, index) => {
+    console.log(`  ${index + 1}. 分数: ${score} - ${url.substring(0, 100)}...`)
+  })
   
-  // 修复HTML实体编码问题（解决Bad URL hash）
-  const cleanedUrl = bestUrl
-    .replace(/&amp;/g, '&')  // 修复HTML实体编码 &amp; → &
-    .replace(/&quot;/g, '"')  // 修复引号实体编码
-    .replace(/&lt;/g, '<')   // 修复小于号实体编码
-    .replace(/&gt;/g, '>')   // 修复大于号实体编码
-  
-  if (cleanedUrl !== bestUrl) {
-    console.log('🔧 修复了HTML实体编码问题')
-    console.log(`📏 修复后URL长度: ${cleanedUrl.length} 字符`)
+  // 第四步：尝试验证最高分的URL，失败则尝试备选
+  for (let i = 0; i < Math.min(scoredUrls.length, 3); i++) {
+    const { url: candidateUrl, score } = scoredUrls[i]
+    
+    // 修复HTML实体编码问题
+    const cleanedUrl = candidateUrl
+      .replace(/&amp;/g, '&')
+      .replace(/&quot;/g, '"')
+      .replace(/&lt;/g, '<')
+      .replace(/&gt;/g, '>')
+    
+    console.log(`🧪 测试候选URL ${i + 1} (分数: ${score}): ${cleanedUrl.substring(0, 100)}...`)
+    
+    // 基本格式验证
+    if (isValidVideoUrl(cleanedUrl)) {
+      console.log(`✅ URL ${i + 1} 通过基本验证`)
+      
+      // 可选的HEAD请求验证（仅在生产环境启用以避免过多请求）
+      if (process.env.ENABLE_URL_VALIDATION === 'true') {
+        const isValid = await validateUrlWithHeadRequest(cleanedUrl)
+        if (isValid) {
+          console.log(`✅ URL ${i + 1} 通过网络验证`)
+          return [{ url: cleanedUrl, index: 1 }]
+        } else {
+          console.log(`❌ URL ${i + 1} 网络验证失败，尝试下一个...`)
+          continue
+        }
+      } else {
+        // 跳过网络验证，直接返回最高分的URL
+        return [{ url: cleanedUrl, index: 1 }]
+      }
+    } else {
+      console.log(`❌ URL ${i + 1} 格式验证失败，尝试下一个...`)
+    }
   }
   
-  // 验证URL格式
-  if (cleanedUrl.includes('cdninstagram.com') && cleanedUrl.includes('.mp4')) {
-    console.log('✅ URL格式验证通过（Instagram CDN + MP4）')
-    return [{ url: cleanedUrl, index: 1 }]
-  } else if (cleanedUrl.includes('.mp4') && cleanedUrl.startsWith('https://')) {
-    console.log('✅ URL格式验证通过（HTTPS + MP4）')  
-    return [{ url: cleanedUrl, index: 1 }]
-  } else {
-    console.log('⚠️ URL格式可疑，但仍然返回')
-    return [{ url: cleanedUrl, index: 1 }]
+  // 如果所有URL都验证失败，返回最高分的URL作为最后尝试
+  const fallbackUrl = scoredUrls[0].url
+    .replace(/&amp;/g, '&')
+    .replace(/&quot;/g, '"')
+    .replace(/&lt;/g, '<')
+    .replace(/&gt;/g, '>')
+  
+  console.log('⚠️ 所有URL验证都有问题，返回最高分URL作为备选')
+  return [{ url: fallbackUrl, index: 1 }]
+}
+
+// URL评分函数 - 根据多种因素计算分数
+function calculateUrlScore(url: string): number {
+  let score = 0
+  
+  // 1. Instagram CDN 域名优先（+20分）
+  if (url.includes('cdninstagram.com')) {
+    score += 20
+  } else if (url.includes('instagram.com')) {
+    score += 15
+  }
+  
+  // 2. 视频相关关键词加分
+  const videoKeywords = ['video', 'playback', 'media', 'stream', 'play']
+  for (const keyword of videoKeywords) {
+    if (url.toLowerCase().includes(keyword)) {
+      score += 10
+      break // 只加一次分
+    }
+  }
+  
+  // 3. 排除明显的缩略图URL（-15分）
+  const thumbnailKeywords = ['thumbnail', 'preview', 'thumb', 'cover', 'poster']
+  for (const keyword of thumbnailKeywords) {
+    if (url.toLowerCase().includes(keyword)) {
+      score -= 15
+      break
+    }
+  }
+  
+  // 4. URL长度和参数完整性（更长的URL通常包含更多参数）
+  if (url.length > 200) {
+    score += 8
+  } else if (url.length > 150) {
+    score += 5
+  } else if (url.length > 100) {
+    score += 3
+  }
+  
+  // 5. 查询参数数量（更多参数通常意味着更完整的URL）
+  const paramCount = (url.match(/[?&]/g) || []).length
+  score += Math.min(paramCount * 2, 10) // 最多加10分
+  
+  // 6. 高质量指标
+  const qualityIndicators = ['hd', '1080', '720', 'high', 'quality']
+  for (const indicator of qualityIndicators) {
+    if (url.toLowerCase().includes(indicator)) {
+      score += 5
+      break
+    }
+  }
+  
+  // 7. 协议安全性
+  if (url.startsWith('https://')) {
+    score += 3
+  }
+  
+  // 8. MP4格式确认
+  if (url.includes('.mp4')) {
+    score += 5
+  }
+  
+  return score
+}
+
+// 基本URL格式验证
+function isValidVideoUrl(url: string): boolean {
+  try {
+    // 基本URL格式检查
+    new URL(url)
+    
+    // 必须是HTTPS
+    if (!url.startsWith('https://')) {
+      return false
+    }
+    
+    // 必须包含.mp4
+    if (!url.includes('.mp4')) {
+      return false
+    }
+    
+    // 不能包含明显的错误指标
+    const invalidIndicators = ['error', 'null', 'undefined', 'missing']
+    if (invalidIndicators.some(indicator => url.toLowerCase().includes(indicator))) {
+      return false
+    }
+    
+    return true
+  } catch {
+    return false
+  }
+}
+
+// 可选的HEAD请求验证（检查URL是否可访问）
+async function validateUrlWithHeadRequest(url: string): Promise<boolean> {
+  try {
+    const controller = new AbortController()
+    const timeoutId = setTimeout(() => controller.abort(), 5000) // 5秒超时
+    
+    const response = await fetch(url, {
+      method: 'HEAD',
+      signal: controller.signal,
+      headers: {
+        'User-Agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36'
+      }
+    })
+    
+    clearTimeout(timeoutId)
+    
+    // 检查状态码和Content-Type
+    const contentType = response.headers.get('content-type') || ''
+    const isVideo = contentType.includes('video/') || contentType.includes('application/octet-stream')
+    
+    return response.ok && (isVideo || response.status === 200)
+  } catch (error) {
+    console.warn('URL验证失败:', error)
+    return false
   }
 }
 
