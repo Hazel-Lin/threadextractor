@@ -49,7 +49,7 @@ export function ResponsiveAd({
   useEffect(() => {
     if (shouldLoad) {
       try {
-        const adsbygoogle = (window as any).adsbygoogle || []
+        const adsbygoogle = window.adsbygoogle || []
         adsbygoogle.push({})
       } catch (error) {
         console.error("Responsive Ad loading error:", error)

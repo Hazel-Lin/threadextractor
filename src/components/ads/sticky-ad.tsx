@@ -31,7 +31,7 @@ export function StickyAd({
   useEffect(() => {
     if (hasLoaded && isVisible) {
       try {
-        const adsbygoogle = (window as any).adsbygoogle || []
+        const adsbygoogle = window.adsbygoogle || []
         adsbygoogle.push({})
       } catch (error) {
         console.error("Sticky Ad loading error:", error)

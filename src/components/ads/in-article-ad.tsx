@@ -14,7 +14,7 @@ export function InArticleAd({
 }: InArticleAdProps) {
   useEffect(() => {
     try {
-      const adsbygoogle = (window as any).adsbygoogle || []
+      const adsbygoogle = window.adsbygoogle || []
       adsbygoogle.push({})
     } catch (error) {
       console.error("In-Article Ad loading error:", error)

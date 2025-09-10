@@ -27,6 +27,25 @@ const nextConfig: NextConfig = {
   env: {
     NEXT_PUBLIC_BACKEND_URL: process.env.NEXT_PUBLIC_BACKEND_URL,
   },
+  // Webpack configuration to handle optional dependencies
+  webpack: (config, { isServer }) => {
+    if (!isServer) {
+      config.resolve.fallback = {
+        ...config.resolve.fallback,
+        fs: false,
+        net: false,
+        tls: false,
+      }
+    }
+    
+    // Ignore optional drizzle-orm dependency in rate-limiter-flexible
+    config.externals = config.externals || []
+    config.externals.push({
+      'drizzle-orm': 'drizzle-orm'
+    })
+    
+    return config
+  },
 };
 
 export default nextConfig;

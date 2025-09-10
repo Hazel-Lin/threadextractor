@@ -29,8 +29,8 @@ export function useAdTracking({
             onView?.()
             
             // 记录事件（可以集成 Google Analytics）
-            if ((window as any).gtag) {
-              (window as any).gtag("event", "ad_impression", {
+            if (window.gtag) {
+              window.gtag("event", "ad_impression", {
                 ad_slot: adSlot,
                 ad_type: adType,
               })
@@ -41,8 +41,8 @@ export function useAdTracking({
             onViewDuration?.(duration)
             
             // 记录查看时长
-            if ((window as any).gtag && duration > 1000) {
-              (window as any).gtag("event", "ad_view_duration", {
+            if (window.gtag && duration > 1000) {
+              window.gtag("event", "ad_view_duration", {
                 ad_slot: adSlot,
                 ad_type: adType,
                 duration_ms: duration,

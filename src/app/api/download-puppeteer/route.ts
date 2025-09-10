@@ -201,7 +201,7 @@ export async function GET(request: NextRequest) {
         }
         
       } catch (pageDownloadError) {
-        console.log('⚠️ 页面内下载失败，尝试网络拦截方案...')
+        console.log('⚠️ 页面内下载失败，尝试网络拦截方案...', pageDownloadError)
         
         // 方案2: 使用 Puppeteer 网络拦截下载（备用方案）
         try {

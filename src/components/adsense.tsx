@@ -22,7 +22,7 @@ export function AdSense({
 }: AdSenseProps) {
   useEffect(() => {
     try {
-      const adsbygoogle = (window as any).adsbygoogle || []
+      const adsbygoogle = window.adsbygoogle || []
       adsbygoogle.push({})
     } catch (error) {
       console.error("AdSense error:", error)

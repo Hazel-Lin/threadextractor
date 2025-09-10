@@ -1,7 +1,6 @@
 "use client"
 
 import { createContext, useContext, useEffect, useState } from "react"
-import { adsenseConfig } from "@/config/adsense"
 
 interface AdSenseContextType {
   isLoaded: boolean
@@ -40,7 +39,7 @@ export function AdSenseProvider({ children }: { children: React.ReactNode }) {
 
     // 检查 AdSense 脚本是否加载
     const checkAdSenseLoaded = () => {
-      if ((window as any).adsbygoogle) {
+      if (window.adsbygoogle) {
         setIsLoaded(true)
       } else {
         setTimeout(checkAdSenseLoaded, 500)
@@ -66,7 +65,7 @@ export function AdSenseProvider({ children }: { children: React.ReactNode }) {
 
   const refreshAds = () => {
     try {
-      const adsbygoogle = (window as any).adsbygoogle || []
+      const adsbygoogle = window.adsbygoogle || []
       // 触发广告刷新
       const ads = document.querySelectorAll(".adsbygoogle")
       ads.forEach(() => {
