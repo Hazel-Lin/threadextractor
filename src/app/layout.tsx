@@ -72,6 +72,14 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="zh-CN" suppressHydrationWarning>
+      <head>
+        <meta name="google-adsense-account" content="ca-pub-4541336405653119" />
+        <script
+          async
+          src={'https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-4541336405653119'}
+          crossOrigin="anonymous"
+        />
+      </head>
       <body
         className={`${inter.variable} ${jetbrainsMono.variable} antialiased min-h-screen flex flex-col bg-background text-foreground`}
       >
