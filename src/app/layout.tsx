@@ -29,7 +29,7 @@ export const metadata: Metadata = {
     address: false,
     telephone: false,
   },
-  metadataBase: new URL("https://threadextractor.com"),
+  metadataBase: new URL("https://threadsextractor.com"),
   alternates: {
     canonical: "/",
   },
@@ -41,7 +41,7 @@ export const metadata: Metadata = {
   openGraph: {
     title: "Threads Extractor - Threads 视频提取器",
     description: "一键提取 Threads 视频下载链接，支持批量下载",
-    url: "https://threadextractor.com",
+    url: "https://threadsextractor.com",
     siteName: "Threads Extractor",
     locale: "zh_CN",
     type: "website",
@@ -50,7 +50,7 @@ export const metadata: Metadata = {
     card: "summary_large_image",
     title: "Threads Extractor - Threads 视频提取器",
     description: "一键提取 Threads 视频下载链接，支持批量下载",
-    creator: "@threadextractor",
+    creator: "@threadsextractor",
   },
   robots: {
     index: true,
