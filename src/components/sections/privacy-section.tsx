@@ -128,6 +128,19 @@ export function PrivacySection() {
               
               <div className="space-y-4">
                 <div className="bg-muted/30 rounded-lg p-4">
+                  <h3 className="font-semibold text-foreground mb-2">Google AdSense</h3>
+                  <p className="text-muted-foreground text-sm mb-2">
+                    We use Google AdSense to display advertisements on our website to support free services.
+                  </p>
+                  <ul className="text-sm text-muted-foreground space-y-1">
+                    <li>• Google uses cookies to serve ads based on your prior visits to this website</li>
+                    <li>• Google&apos;s use of advertising cookies enables it and its partners to serve ads based on your visit to this site and/or other sites</li>
+                    <li>• You may opt out of personalized advertising by visiting <a href="https://www.google.com/settings/ads" className="text-primary underline" target="_blank" rel="noopener noreferrer">Ads Settings</a></li>
+                    <li>• You can opt out of a third-party vendor&apos;s use of cookies by visiting the <a href="http://www.aboutads.info/choices/" className="text-primary underline" target="_blank" rel="noopener noreferrer">Network Advertising Initiative opt-out page</a></li>
+                  </ul>
+                </div>
+
+                <div className="bg-muted/30 rounded-lg p-4">
                   <h3 className="font-semibold text-foreground mb-2">Backend Video Processing</h3>
                   <p className="text-muted-foreground text-sm mb-2">
                     Our server extracts video content from Threads pages.
@@ -146,6 +159,72 @@ export function PrivacySection() {
                   <ul className="text-sm text-muted-foreground space-y-1">
                     <li>• Basic access logs (IP, timestamp) for security</li>
                     <li>• Automatically deleted within 30 days</li>
+                  </ul>
+                </div>
+              </div>
+            </section>
+
+            <hr className="border-border" />
+
+            {/* Cookies and Tracking */}
+            <section className="space-y-6">
+              <div className="flex items-center gap-3">
+                <Server className="h-6 w-6 text-primary" />
+                <h2 className="text-2xl font-bold text-foreground">Cookies and Tracking Technologies</h2>
+              </div>
+              
+              <div className="space-y-4">
+                <p className="text-muted-foreground">
+                  This website uses cookies and similar tracking technologies to improve your browsing experience and display relevant advertisements.
+                </p>
+
+                <div className="bg-muted/30 rounded-lg p-4">
+                  <h3 className="font-semibold text-foreground mb-3">What are Cookies?</h3>
+                  <p className="text-muted-foreground text-sm mb-3">
+                    Cookies are small text files stored on your device when you visit a website. They help websites remember your preferences and improve functionality.
+                  </p>
+                  
+                  <h4 className="font-semibold text-foreground mb-2 mt-4">Types of Cookies We Use:</h4>
+                  <div className="space-y-3">
+                    <div>
+                      <h5 className="font-medium text-foreground text-sm mb-1">1. Essential Cookies</h5>
+                      <p className="text-muted-foreground text-sm">Required for basic website functionality. These cannot be disabled.</p>
+                    </div>
+                    <div>
+                      <h5 className="font-medium text-foreground text-sm mb-1">2. Advertising Cookies (Google AdSense)</h5>
+                      <p className="text-muted-foreground text-sm">Used to display personalized advertisements. You can opt out of personalized ads.</p>
+                    </div>
+                    <div>
+                      <h5 className="font-medium text-foreground text-sm mb-1">3. Analytics Cookies</h5>
+                      <p className="text-muted-foreground text-sm">Help us understand how visitors interact with our website to improve user experience.</p>
+                    </div>
+                  </div>
+                </div>
+
+                <div className="bg-muted/30 rounded-lg p-4">
+                  <h3 className="font-semibold text-foreground mb-2">Managing Cookies</h3>
+                  <p className="text-muted-foreground text-sm mb-3">
+                    You have control over cookies. Here are your options:
+                  </p>
+                  <ul className="text-sm text-muted-foreground space-y-2">
+                    <li>• <strong>Browser Settings:</strong> Most browsers allow you to refuse cookies or delete existing ones through settings</li>
+                    <li>• <strong>Opt-out Tools:</strong> Use <a href="https://www.google.com/settings/ads" className="text-primary underline" target="_blank" rel="noopener noreferrer">Google Ads Settings</a> to control personalized advertising</li>
+                    <li>• <strong>Do Not Track:</strong> Enable &quot;Do Not Track&quot; in your browser preferences</li>
+                    <li>• <strong>Note:</strong> Disabling cookies may affect website functionality</li>
+                  </ul>
+                </div>
+
+                <div className="bg-blue-50 dark:bg-blue-950/20 border border-blue-200 dark:border-blue-800 rounded-lg p-4">
+                  <h3 className="font-semibold text-foreground mb-2">Google AdSense Cookie Information</h3>
+                  <p className="text-muted-foreground text-sm mb-3">
+                    Google, as a third party vendor, uses cookies to serve ads on our site. Google&apos;s use of the DART cookie enables it to serve ads to our users based on their visit to our sites and other sites on the Internet.
+                  </p>
+                  <p className="text-muted-foreground text-sm">
+                    For more information about Google&apos;s advertising cookies and how to control them, please visit:
+                  </p>
+                  <ul className="text-sm text-muted-foreground space-y-1 mt-2">
+                    <li>• <a href="https://policies.google.com/technologies/ads" className="text-primary underline" target="_blank" rel="noopener noreferrer">Google Advertising & Privacy</a></li>
+                    <li>• <a href="https://policies.google.com/technologies/partner-sites" className="text-primary underline" target="_blank" rel="noopener noreferrer">How Google uses information from sites that use our services</a></li>
                   </ul>
                 </div>
               </div>

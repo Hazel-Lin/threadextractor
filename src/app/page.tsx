@@ -1,5 +1,6 @@
 import ThreadsExtractor from "@/components/threads-extractor"
-import { HelpSection } from "@/components/sections/help-section"
+import { AboutSection } from "@/components/sections/about-section"
+import { HowToSection } from "@/components/sections/how-to-section"
 
 export default function Home() {
   return (
@@ -8,8 +9,10 @@ export default function Home() {
         <ThreadsExtractor />
       </section>
 
-      <section id="help" className="flex-1 flex items-center justify-center bg-background my-16">
-        <HelpSection />
+      <AboutSection />
+
+      <section id="help">
+        <HowToSection />
       </section>
     </div>
   )
