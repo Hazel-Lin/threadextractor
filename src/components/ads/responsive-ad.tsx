@@ -19,6 +19,7 @@ export function ResponsiveAd({
   lazyLoad = true
 }: ResponsiveAdProps) {
   const adRef = useRef<HTMLDivElement>(null)
+  const insRef = useRef<HTMLModElement | null>(null)
   const [shouldLoad, setShouldLoad] = useState(!lazyLoad)
 
   useEffect(() => {
@@ -47,26 +48,38 @@ export function ResponsiveAd({
   }, [lazyLoad])
 
   useEffect(() => {
-    if (shouldLoad) {
-      try {
-        const adsbygoogle = window.adsbygoogle || []
-        adsbygoogle.push({})
-      } catch (error) {
-        console.error("Responsive Ad loading error:", error)
-      }
+    if (!shouldLoad || !slot || !insRef.current) {
+      return
     }
-  }, [shouldLoad])
+
+    if (insRef.current.dataset.adsbygoogleStatus === "done") {
+      return
+    }
+
+    try {
+      const adsbygoogle = window.adsbygoogle || []
+      adsbygoogle.push({})
+    } catch (error) {
+      console.error("Responsive Ad loading error:", error)
+    }
+  }, [shouldLoad, slot])
+
+  if (!slot) {
+    return null
+  }
 
   return (
     <div ref={adRef} className={`responsive-ad-container ${className}`}>
       {shouldLoad && (
         <ins
+          ref={insRef}
           className="adsbygoogle"
           style={{ display: "block", ...style }}
           data-ad-client={adsenseConfig.publisherId}
           data-ad-slot={slot}
           data-ad-format={format}
           data-full-width-responsive="true"
+          data-adtest={adsenseConfig.settings.testMode ? "on" : undefined}
         />
       )}
     </div>

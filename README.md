@@ -45,6 +45,31 @@ yarn dev
 
 访问 [http://localhost:3000](http://localhost:3000) 查看应用。
 
+### Google AdSense 配置
+项目已接入 Google AdSense，默认支持两种模式：
+
+- 自动广告：只要设置 `NEXT_PUBLIC_GOOGLE_ADSENSE_CLIENT_ID` 就会启用
+- 手动广告位：首页会在已配置 slot 时渲染顶部、中部、底部广告位
+
+示例环境变量：
+
+```bash
+NEXT_PUBLIC_GOOGLE_ADSENSE_CLIENT_ID=ca-pub-xxxxxxxxxxxxxxxx
+NEXT_PUBLIC_GOOGLE_ADSENSE_AUTO_ADS=true
+NEXT_PUBLIC_GOOGLE_ADSENSE_LAZY_LOAD=true
+NEXT_PUBLIC_GOOGLE_ADSENSE_TEST_MODE=false
+NEXT_PUBLIC_GOOGLE_ADSENSE_SLOT_TOP=1234567890
+NEXT_PUBLIC_GOOGLE_ADSENSE_SLOT_MIDDLE=2345678901
+NEXT_PUBLIC_GOOGLE_ADSENSE_SLOT_BOTTOM=3456789012
+```
+
+验证项：
+
+- 页面 `<head>` 会输出 `google-adsense-account`
+- AdSense 脚本会在客户端自动加载
+- `ads.txt` 可通过 `/ads.txt` 访问
+- 未配置 slot 时不会渲染空广告容器
+
 ### 构建生产版本
 ```bash
 npm run build

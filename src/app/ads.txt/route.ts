@@ -1,7 +1,7 @@
-export async function GET() {
-  const adsContent = 'google.com, pub-4541336405653119, DIRECT, f08c47fec0942fa0';
+import { ADSENSE_ADS_TXT } from "@/config/adsense"
 
-  return new Response(adsContent, {
+export async function GET() {
+  return new Response(ADSENSE_ADS_TXT, {
     status: 200,
     headers: {
       'Content-Type': 'text/plain; charset=utf-8',

@@ -1,9 +1,12 @@
 import type { Metadata } from "next";
 import { Inter, JetBrains_Mono } from "next/font/google";
+import Script from "next/script";
 import "./globals.css";
 import { Navigation } from "@/components/navigation";
 import { Footer } from "@/components/footer";
 import { Analytics } from "@vercel/analytics/next"
+import { AdSenseProvider } from "@/providers/adsense-provider";
+import { ADSENSE_CLIENT_ID, ADSENSE_SCRIPT_SRC, adsenseConfig, hasAdSensePublisher } from "@/config/adsense";
 
 const inter = Inter({
   variable: "--font-inter",
@@ -70,24 +73,62 @@ export default function RootLayout({
 }: Readonly<{
   children: React.ReactNode;
 }>) {
+  const hasAdsense = hasAdSensePublisher()
+  const googleAnalyticsId = process.env.NEXT_PUBLIC_GOOGLE_ANALYTICS_ID?.trim()
+
   return (
     <html lang="zh-CN" suppressHydrationWarning>
       <head>
-        <meta name="google-adsense-account" content="ca-pub-4541336405653119" />
-        <script
-          async
-          src={'https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-4541336405653119'}
-          crossOrigin="anonymous"
-        />
+        {hasAdsense && (
+          <meta name="google-adsense-account" content={ADSENSE_CLIENT_ID} />
+        )}
       </head>
       <body
         className={`${inter.variable} ${jetbrainsMono.variable} antialiased min-h-screen flex flex-col bg-background text-foreground`}
       >
-        <Navigation />
-        <main className="flex-1">
-          {children}
-        </main>
-        <Footer />
+        {googleAnalyticsId && (
+          <>
+            <Script
+              id="google-analytics"
+              async
+              strategy="afterInteractive"
+              src={`https://www.googletagmanager.com/gtag/js?id=${googleAnalyticsId}`}
+            />
+            <Script id="google-analytics-config" strategy="afterInteractive">
+              {`window.dataLayer = window.dataLayer || [];
+function gtag(){dataLayer.push(arguments);}
+window.gtag = gtag;
+gtag('js', new Date());
+gtag('config', '${googleAnalyticsId}');`}
+            </Script>
+          </>
+        )}
+        {hasAdsense && (
+          <>
+            <Script
+              id="google-adsense"
+              async
+              strategy="afterInteractive"
+              src={ADSENSE_SCRIPT_SRC}
+              crossOrigin="anonymous"
+            />
+            {adsenseConfig.settings.enableAutoAds && (
+              <Script id="google-adsense-auto-ads" strategy="afterInteractive">
+                {`(adsbygoogle = window.adsbygoogle || []).push({
+  google_ad_client: "${ADSENSE_CLIENT_ID}",
+  enable_page_level_ads: true
+});`}
+              </Script>
+            )}
+          </>
+        )}
+        <AdSenseProvider>
+          <Navigation />
+          <main className="flex-1">
+            {children}
+          </main>
+          <Footer />
+        </AdSenseProvider>
         <Analytics />
       </body>
     </html>
