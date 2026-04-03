@@ -40,6 +40,13 @@ interface LoadingStep {
   description?: string
 }
 
+interface ThreadsExtractorProps {
+  title?: string
+  description?: string
+  placeholder?: string
+  submitLabel?: string
+}
+
 const INITIAL_LOADING_STEPS: LoadingStep[] = [
   { id: "validate", label: "Validate", status: "pending" },
   { id: "connect", label: "Connect", status: "pending" },
@@ -48,7 +55,12 @@ const INITIAL_LOADING_STEPS: LoadingStep[] = [
   { id: "process", label: "Process", status: "pending" },
 ]
 
-export default function ThreadsExtractor() {
+export default function ThreadsExtractor({
+  title = "Download Public Threads Videos Online",
+  description = "Paste a public Threads post URL to start the downloader, then save the returned media file in your browser.",
+  placeholder = "Enter a Threads Link",
+  submitLabel = "Load",
+}: ThreadsExtractorProps) {
   const [url, setUrl] = useState("")
   const [isLoading, setIsLoading] = useState(false)
   const [videos, setVideos] = useState<VideoData[]>([])
@@ -221,22 +233,22 @@ export default function ThreadsExtractor() {
           {/* Header */}
           <div className="space-y-2">
             <h1 className="text-3xl sm:text-4xl font-bold text-foreground">
-              Easily download any <span className="text-primary">Threads</span> Video
+              {title}
             </h1>
             <p className="text-base text-muted-foreground">
-              Just paste the link to download videos with one click, completely free of charge.
+              {description}
             </p>
           </div>
 
           {/* Main Form */}
           <div className="max-w-2xl mx-auto space-y-4">
             <form onSubmit={handleSubmit} className="flex flex-col sm:flex-row gap-3">
-              <Input
-                type="url"
-                placeholder="Enter a Threads Link"
-                value={url}
-                onChange={(e) => setUrl(e.target.value)}
-                disabled={isLoading}
+                <Input
+                  type="url"
+                  placeholder={placeholder}
+                  value={url}
+                  onChange={(e) => setUrl(e.target.value)}
+                  disabled={isLoading}
                 className="flex-1 h-12 px-4 text-base border-2 border-border focus:border-primary text-foreground placeholder:text-placeholder"
               />
                 <Button 
@@ -247,7 +259,7 @@ export default function ThreadsExtractor() {
                 {isLoading ? (
                   <Loader2 className="h-4 w-4 animate-spin" />
                 ) : (
-                  <span className="font-bold">Load</span>
+                  <span className="font-bold">{submitLabel}</span>
                 )}
                 </Button>
             </form>

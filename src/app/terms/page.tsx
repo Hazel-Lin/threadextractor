@@ -3,15 +3,14 @@ import { Alert, AlertDescription } from "@/components/ui/alert"
 import { FileText, AlertTriangle, Shield, Scale } from "lucide-react"
 import type { Metadata } from "next"
 import Link from "next/link"
+import { buildMetadata } from "@/lib/metadata"
 
-export const metadata: Metadata = {
-  title: "Terms of Service - Threads Extractor",
-  description: "Terms of Service for Threads Extractor. Understand your rights and responsibilities when using our video extraction service.",
-  robots: {
-    index: true,
-    follow: true,
-  },
-}
+export const metadata: Metadata = buildMetadata({
+  title: "Terms of Service",
+  description: "Read the Terms of Service for Threads Extractor, including acceptable use, copyright, advertising, and service limitations.",
+  path: "/terms",
+  keywords: ["threads extractor terms", "threads downloader terms of service"],
+})
 
 export default function TermsPage() {
   return (
@@ -31,7 +30,7 @@ export default function TermsPage() {
             Please read these terms carefully before using Threads Extractor
           </p>
           <p className="text-sm text-muted-foreground">
-            Last updated: November 1, 2025
+            Last updated: April 3, 2026
           </p>
         </div>
 
@@ -124,7 +123,7 @@ export default function TermsPage() {
                     constitutes copyright infringement, please contact us at:
                   </p>
                   <p className="text-muted-foreground text-sm">
-                    <strong>Email:</strong> dmca@threadextractor.com
+                    <strong>Email:</strong> dmca@threadsextractor.com
                   </p>
                   <p className="text-muted-foreground text-sm">
                     Please provide: (1) Description of copyrighted work, (2) URL of the content, 
@@ -253,10 +252,10 @@ export default function TermsPage() {
               </p>
               <div className="bg-muted/30 rounded-lg p-4">
                 <p className="text-muted-foreground text-sm">
-                  <strong>Email:</strong> legal@threadextractor.com
+                  <strong>Email:</strong> legal@threadsextractor.com
                 </p>
                 <p className="text-muted-foreground text-sm">
-                  <strong>General Support:</strong> support@threadextractor.com
+                  <strong>General Support:</strong> support@threadsextractor.com
                 </p>
               </div>
             </section>
@@ -276,4 +275,3 @@ export default function TermsPage() {
     </div>
   )
 }
-

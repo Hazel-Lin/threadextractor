@@ -20,7 +20,7 @@ export function PrivacySection() {
             We value your privacy and are committed to protecting your personal information
           </p>
           <p className="text-sm text-muted-foreground">
-            Last updated: July 20, 2025
+            Last updated: April 3, 2026
           </p>
         </div>
 
@@ -32,8 +32,8 @@ export function PrivacySection() {
             <Alert className="border-primary/20 bg-primary/5">
               <Shield className="h-5 w-5 text-primary" />
               <AlertDescription className="text-base text-foreground">
-                <strong>Privacy Commitment:</strong> Threads Extractor uses complete client-side processing.
-                We do not collect, store or transmit your personal information. All operations are completed locally in your browser.
+                <strong>Privacy Commitment:</strong> Threads Extractor uses temporary server-side processing to resolve public media files.
+                We do not require an account, and we do not intentionally store submitted post URLs as a user history database.
               </AlertDescription>
             </Alert>
 
@@ -44,7 +44,7 @@ export function PrivacySection() {
                 <h2 className="text-2xl font-bold text-foreground">Information We Don&apos;t Collect</h2>
               </div>
               <p className="text-muted-foreground">
-                We absolutely do not collect or store any of the following information:
+                We do not ask you to create an account or submit personal profile information in order to use the downloader. We also do not intentionally build a personal download history for individual users.
               </p>
               
               <div className="grid md:grid-cols-2 gap-6">
@@ -86,7 +86,7 @@ export function PrivacySection() {
                   <div>
                     <h3 className="font-semibold text-foreground mb-2">Local Processing</h3>
                     <p className="text-muted-foreground">
-                      Video extraction is handled by our backend server, but no personal data or request content is stored.
+                      Video extraction is handled by our backend server so the site can process public Threads post URLs and return a downloadable file more reliably than a browser-only workflow.
                     </p>
                   </div>
                 </div>
@@ -110,7 +110,7 @@ export function PrivacySection() {
                   <div>
                     <h3 className="font-semibold text-foreground mb-2">Instant Cleanup</h3>
                     <p className="text-muted-foreground">
-                      All temporary data is automatically cleared when you refresh or close the page.
+                      Temporary processing data is not intended to become a long-term user history. Operational logs may still exist at the hosting or infrastructure layer for security, debugging, and abuse prevention.
                     </p>
                   </div>
                 </div>
@@ -143,11 +143,11 @@ export function PrivacySection() {
                 <div className="bg-muted/30 rounded-lg p-4">
                   <h3 className="font-semibold text-foreground mb-2">Backend Video Processing</h3>
                   <p className="text-muted-foreground text-sm mb-2">
-                    Our server extracts video content from Threads pages.
+                    Our server processes public Threads post URLs so it can extract media links and deliver download responses.
                   </p>
                   <ul className="text-sm text-muted-foreground space-y-1">
-                    <li>• Only URL addresses are transmitted</li>
-                    <li>• No user data is stored on our servers</li>
+                    <li>• Public post URLs may be transmitted to our servers for temporary processing</li>
+                    <li>• We do not require user accounts or store a personal media library for you</li>
                   </ul>
                 </div>
                 
@@ -249,7 +249,7 @@ export function PrivacySection() {
                 <div className="bg-muted/30 rounded-lg p-4">
                   <h3 className="font-semibold text-foreground mb-2">Data Transparency</h3>
                   <p className="text-muted-foreground text-sm">
-                    Our code is open source for your review and verification.
+                    This privacy policy explains the main categories of processing involved in serving the downloader and the advertising-supported site experience.
                   </p>
                 </div>
                 <div className="bg-muted/30 rounded-lg p-4">
@@ -273,7 +273,7 @@ export function PrivacySection() {
             <Alert className="border-orange-200 bg-orange-50 dark:bg-orange-950/20 dark:border-orange-800">
               <AlertTriangle className="h-5 w-5 text-orange-600" />
               <AlertDescription className="text-orange-800 dark:text-orange-200">
-                <strong>Important Notice:</strong> While we don&apos;t collect your data, downloaded content may be copyright protected.
+                <strong>Important Notice:</strong> While we do not require personal accounts to use the site, downloaded content may still be copyright protected.
                 Please ensure you have the right to download and use this content in compliance with applicable laws.
               </AlertDescription>
             </Alert>
@@ -289,7 +289,7 @@ export function PrivacySection() {
                 <div className="bg-muted/30 rounded-lg p-4">
                   <h3 className="font-semibold text-foreground mb-2">Privacy Questions</h3>
                   <p className="text-muted-foreground text-sm mb-2">
-                    <strong>Email:</strong> privacy@threadextractor.com
+                    <strong>Email:</strong> privacy@threadsextractor.com
                   </p>
                   <p className="text-xs text-muted-foreground">
                     We respond within 48 hours.
@@ -298,7 +298,7 @@ export function PrivacySection() {
                 <div className="bg-muted/30 rounded-lg p-4">
                   <h3 className="font-semibold text-foreground mb-2">General Support</h3>
                   <p className="text-muted-foreground text-sm mb-2">
-                    <strong>Email:</strong> support@threadextractor.com
+                    <strong>Email:</strong> support@threadsextractor.com
                   </p>
                   <p className="text-xs text-muted-foreground">
                     For technical issues and questions.

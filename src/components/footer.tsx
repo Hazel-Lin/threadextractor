@@ -1,41 +1,63 @@
 import Link from "next/link"
 
 export function Footer() {
+  const toolLinks = [
+    { href: "/threads-video-downloader", label: "Threads Video Downloader" },
+    { href: "/download-threads-video-online", label: "Download Threads Video Online" },
+    { href: "/threads-to-mp4", label: "Threads to MP4" },
+  ]
+
+  const guideLinks = [
+    { href: "/guides/how-to-download-videos-from-threads", label: "How to Download Videos from Threads" },
+    { href: "/guides/threads-video-downloader-faq", label: "Threads Downloader FAQ" },
+    { href: "/guides/threads-video-not-downloading", label: "Threads Video Not Downloading" },
+  ]
+
   return (
     <footer className="bg-background border-t border-border">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        <div className="text-center space-y-4">
-          <div className="flex flex-wrap justify-center items-center gap-x-6 gap-y-2">
-            <Link 
-              href="/#home" 
-              className="text-sm text-muted-foreground hover:text-foreground transition-colors"
-            >
-              Home
-            </Link>
-            <Link 
-              href="/#help" 
-              className="text-sm text-muted-foreground hover:text-foreground transition-colors"
-            >
-              How to Use
-            </Link>
-            <Link 
-              href="/privacy" 
-              className="text-sm text-muted-foreground hover:text-foreground transition-colors"
-            >
-              Privacy Policy
-            </Link>
-            <Link 
-              href="/terms" 
-              className="text-sm text-muted-foreground hover:text-foreground transition-colors"
-            >
-              Terms of Service
-            </Link>
-            <a 
-              href="mailto:contact@threadextractor.com"
-              className="text-sm text-muted-foreground hover:text-foreground transition-colors"
-            >
-              Contact Us
-            </a>
+        <div className="space-y-8">
+          <div className="grid gap-8 md:grid-cols-4">
+            <div className="space-y-3">
+              <h3 className="text-sm font-semibold uppercase tracking-[0.14em] text-foreground">Site</h3>
+              <div className="flex flex-col gap-2">
+                <Link href="/" className="text-sm text-muted-foreground hover:text-foreground transition-colors">Home</Link>
+                <Link href="/tools" className="text-sm text-muted-foreground hover:text-foreground transition-colors">Tools</Link>
+                <Link href="/guides" className="text-sm text-muted-foreground hover:text-foreground transition-colors">Guides</Link>
+                <Link href="/#help" className="text-sm text-muted-foreground hover:text-foreground transition-colors">How to Use</Link>
+              </div>
+            </div>
+
+            <div className="space-y-3">
+              <h3 className="text-sm font-semibold uppercase tracking-[0.14em] text-foreground">Tool Pages</h3>
+              <div className="flex flex-col gap-2">
+                {toolLinks.map((link) => (
+                  <Link key={link.href} href={link.href} className="text-sm text-muted-foreground hover:text-foreground transition-colors">
+                    {link.label}
+                  </Link>
+                ))}
+              </div>
+            </div>
+
+            <div className="space-y-3">
+              <h3 className="text-sm font-semibold uppercase tracking-[0.14em] text-foreground">Guides</h3>
+              <div className="flex flex-col gap-2">
+                {guideLinks.map((link) => (
+                  <Link key={link.href} href={link.href} className="text-sm text-muted-foreground hover:text-foreground transition-colors">
+                    {link.label}
+                  </Link>
+                ))}
+              </div>
+            </div>
+
+            <div className="space-y-3">
+              <h3 className="text-sm font-semibold uppercase tracking-[0.14em] text-foreground">Trust</h3>
+              <div className="flex flex-col gap-2">
+                <Link href="/privacy" className="text-sm text-muted-foreground hover:text-foreground transition-colors">Privacy Policy</Link>
+                <Link href="/terms" className="text-sm text-muted-foreground hover:text-foreground transition-colors">Terms of Service</Link>
+                <a href="mailto:contact@threadsextractor.com" className="text-sm text-muted-foreground hover:text-foreground transition-colors">Contact Us</a>
+              </div>
+            </div>
           </div>
 
           <div className="max-w-2xl mx-auto">
@@ -46,7 +68,7 @@ export function Footer() {
             </p>
           </div>
 
-          <div className="text-xs text-muted-foreground space-y-1">
+          <div className="text-center text-xs text-muted-foreground space-y-1">
             <p>
               © 2025 Threads Extractor. All rights reserved.
             </p>

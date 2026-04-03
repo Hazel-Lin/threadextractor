@@ -1,27 +1,31 @@
 import { MetadataRoute } from 'next'
+import { guidePages, toolPages } from '@/lib/seo-pages'
+import { siteConfig } from '@/lib/site-config'
 
 export default function sitemap(): MetadataRoute.Sitemap {
-  const baseUrl = 'https://threadsextractor.com'
+  const baseUrl = siteConfig.baseUrl
+  const staticPages = ["", "/tools", "/guides", "/privacy", "/terms"]
+  const rootChangeFrequency: MetadataRoute.Sitemap[number]["changeFrequency"] = "daily"
+  const staticChangeFrequency: MetadataRoute.Sitemap[number]["changeFrequency"] = "weekly"
   
   return [
-    {
-      url: baseUrl,
+    ...staticPages.map((path, index) => ({
+      url: `${baseUrl}${path}`,
       lastModified: new Date(),
-      changeFrequency: 'daily',
-      priority: 1,
-    },
-    {
-      url: `${baseUrl}/privacy`,
+      changeFrequency: index === 0 ? rootChangeFrequency : staticChangeFrequency,
+      priority: index === 0 ? 1 : 0.85,
+    })),
+    ...toolPages.map((page) => ({
+      url: `${baseUrl}/${page.slug}`,
       lastModified: new Date(),
-      changeFrequency: 'monthly',
-      priority: 0.8,
-    },
-    {
-      url: `${baseUrl}/terms`,
+      changeFrequency: 'weekly' as const,
+      priority: 0.9,
+    })),
+    ...guidePages.map((page) => ({
+      url: `${baseUrl}/guides/${page.slug}`,
       lastModified: new Date(),
-      changeFrequency: 'monthly',
-      priority: 0.8,
-    },
+      changeFrequency: 'monthly' as const,
+      priority: 0.75,
+    })),
   ]
 }
-

@@ -1,80 +1,54 @@
 "use client"
 
 import { useState } from "react"
-import { useRouter, usePathname } from "next/navigation"
+import Link from "next/link"
+import { usePathname } from "next/navigation"
 import { Button } from "@/components/ui/button"
 import { Menu, X } from "lucide-react"
 import { Logo } from "@/components/logo"
 
 export function Navigation() {
   const [isMenuOpen, setIsMenuOpen] = useState(false)
-  const router = useRouter()
   const pathname = usePathname()
 
   const toggleMenu = () => setIsMenuOpen(!isMenuOpen)
-
-  const handleLogoClick = () => {
-    if (pathname === '/') {
-      // If on homepage, scroll to home section
-      scrollToSection('home')
-    } else {
-      // If on other pages, navigate to homepage
-      router.push('/')
-    }
-    setIsMenuOpen(false)
-  }
-
-  const handleHomeClick = () => {
-    if (pathname === '/') {
-      // If on homepage, scroll to home section
-      scrollToSection('home')
-    } else {
-      // If on other pages, navigate to homepage
-      router.push('/')
-    }
-    setIsMenuOpen(false)
-  }
-
-  const scrollToSection = (sectionId: string) => {
-    const element = document.getElementById(sectionId)
-    if (element) {
-      element.scrollIntoView({
-        behavior: 'smooth',
-        block: 'start'
-      })
-    }
-    setIsMenuOpen(false)
-  }
+  const navItems = [
+    { href: "/", label: "Home" },
+    { href: "/tools", label: "Tools" },
+    { href: "/guides", label: "Guides" },
+    { href: "/#help", label: "How It Works" },
+  ]
 
   return (
     <nav className="bg-background border-b border-border">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex h-12 items-center justify-between">
           {/* Logo */}
-          <button
-            onClick={handleLogoClick}
-            className="flex items-center text-foreground hover:text-primary transition-colors"
-          >
+          <Link href="/" className="flex items-center text-foreground hover:text-primary transition-colors">
             <Logo className="w-12 h-12" />
             <span className="text-lg font-bold text-primary">
               Threads Extractor
             </span>
-          </button>
+          </Link>
 
           {/* Desktop Navigation */}
           <div className="hidden md:flex items-center space-x-8">
-            <button
-              onClick={handleHomeClick}
-              className="text-sm text-primary hover:text-primary/80 transition-colors font-bold px-2 py-1 rounded-md hover:bg-primary/10"
-            >
-              Home
-            </button>
-            {/* <button
-              onClick={() => scrollToSection('help')}
-              className="text-sm text-muted-foreground hover:text-foreground transition-colors font-medium px-2 py-1 rounded-md hover:bg-accent"
-            >
-              How to use
-            </button> */}
+            {navItems.map((item) => {
+              const active = pathname === item.href
+              return (
+                <Link
+                  key={item.href}
+                  href={item.href}
+                  className={`text-sm transition-colors font-medium px-2 py-1 rounded-md ${
+                    active
+                      ? "text-primary bg-primary/10"
+                      : "text-muted-foreground hover:text-foreground hover:bg-accent"
+                  }`}
+                >
+                  {item.label}
+                </Link>
+              )
+            })}
           </div>
 
           {/* Mobile Menu Button */}
@@ -94,18 +68,16 @@ export function Navigation() {
         {isMenuOpen && (
           <div className="md:hidden border-t border-border py-4">
             <div className="flex flex-col space-y-4">
-              <button
-                onClick={handleHomeClick}
-                className="text-left text-sm text-primary hover:text-primary/80 transition-colors font-bold py-2 px-2 rounded-md hover:bg-primary/10"
-              >
-                Home
-              </button>
-              <button
-                onClick={() => scrollToSection('help')}
-                className="text-left text-sm text-muted-foreground hover:text-foreground transition-colors font-bold py-2 px-2 rounded-md hover:bg-accent"
-              >
-                How to use
-              </button>
+              {navItems.map((item) => (
+                <Link
+                  key={item.href}
+                  href={item.href}
+                  onClick={() => setIsMenuOpen(false)}
+                  className="text-left text-sm text-muted-foreground hover:text-foreground transition-colors font-bold py-2 px-2 rounded-md hover:bg-accent"
+                >
+                  {item.label}
+                </Link>
+              ))}
             </div>
           </div>
         )}
