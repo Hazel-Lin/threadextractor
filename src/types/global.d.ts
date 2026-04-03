@@ -4,6 +4,7 @@ declare global {
   interface Window {
     adsbygoogle?: unknown[]
     gtag?: (command: string, action: string, parameters?: Record<string, unknown>) => void
+    __threadsextractorAutoAdsInitialized?: boolean
   }
 }
 
