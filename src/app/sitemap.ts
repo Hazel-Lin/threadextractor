@@ -4,7 +4,7 @@ import { siteConfig } from '@/lib/site-config'
 
 export default function sitemap(): MetadataRoute.Sitemap {
   const baseUrl = siteConfig.baseUrl
-  const staticPages = ["", "/tools", "/guides", "/privacy", "/terms"]
+  const staticPages = ["", "/tools", "/guides", "/about", "/contact", "/editorial-policy", "/privacy", "/terms"]
   const rootChangeFrequency: MetadataRoute.Sitemap[number]["changeFrequency"] = "daily"
   const staticChangeFrequency: MetadataRoute.Sitemap[number]["changeFrequency"] = "weekly"
   

@@ -101,7 +101,6 @@ export default async function ToolLandingPage({ params }: { params: Promise<{ sl
       <section className="pb-8">
         <ThreadsExtractor title={page.ctaTitle} description={page.ctaDescription} />
       </section>
-      <ContentAd minHeight={280} />
       <ContentSections sections={page.sections} />
       <FAQSection items={page.faqs} />
       <ContentAd minHeight={250} />

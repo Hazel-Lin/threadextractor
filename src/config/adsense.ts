@@ -24,7 +24,7 @@ export const adsenseConfig = {
   },
   settings: {
     enableLazyLoad: readEnv(process.env.NEXT_PUBLIC_GOOGLE_ADSENSE_LAZY_LOAD) !== "false",
-    enableAutoAds: readEnv(process.env.NEXT_PUBLIC_GOOGLE_ADSENSE_AUTO_ADS) !== "false",
+    enableAutoAds: readEnv(process.env.NEXT_PUBLIC_GOOGLE_ADSENSE_AUTO_ADS) === "true",
     testMode: process.env.NODE_ENV !== "production" || readEnv(process.env.NEXT_PUBLIC_GOOGLE_ADSENSE_TEST_MODE) === "true",
   },
 } as const

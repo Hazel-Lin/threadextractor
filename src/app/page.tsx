@@ -6,6 +6,7 @@ import { HowToSection } from "@/components/sections/how-to-section"
 import { FAQSection } from "@/components/seo/faq-section"
 import { JsonLd } from "@/components/seo/json-ld"
 import { RelatedLinks } from "@/components/seo/related-links"
+import Link from "next/link"
 import { adsenseConfig, hasManualAdSlot } from "@/config/adsense"
 import { buildMetadata } from "@/lib/metadata"
 import { guidePages, toolPages } from "@/lib/seo-pages"
@@ -25,7 +26,6 @@ export const metadata: Metadata = buildMetadata({
 })
 
 export default function Home() {
-  const topBannerSlot = adsenseConfig.ads.homePage.topBanner
   const afterExtractorSlot = adsenseConfig.ads.homePage.afterExtractor
   const afterHelpSlot = adsenseConfig.ads.homePage.afterHelp
   const homeFaqs = [
@@ -77,19 +77,6 @@ export default function Home() {
         />
       </section>
 
-      {hasManualAdSlot(topBannerSlot) && (
-        <section className="px-4 py-6 sm:px-6 lg:px-8">
-          <div className="mx-auto max-w-6xl overflow-hidden rounded-2xl border border-border bg-card/60 px-3 py-4 shadow-sm">
-            <ResponsiveAd
-              slot={topBannerSlot}
-              className="mx-auto min-h-[90px]"
-              style={{ minHeight: "90px" }}
-              lazyLoad={adsenseConfig.settings.enableLazyLoad}
-            />
-          </div>
-        </section>
-      )}
-
       <AboutSection />
 
       {hasManualAdSlot(afterExtractorSlot) && (
@@ -111,6 +98,36 @@ export default function Home() {
       </section>
 
       <FAQSection title="Homepage FAQ" items={homeFaqs} />
+
+      <section className="px-4 py-10 sm:px-6 lg:px-8">
+        <div className="mx-auto max-w-5xl rounded-3xl border border-border bg-card p-6 shadow-sm">
+          <div className="space-y-3">
+            <p className="text-sm font-semibold uppercase tracking-[0.18em] text-primary">Site Trust</p>
+            <h2 className="text-2xl font-bold text-foreground">Website policies and contact details</h2>
+            <p className="max-w-3xl text-sm leading-6 text-muted-foreground">
+              Threads Extractor maintains dedicated pages for site background, editorial standards, support routes,
+              privacy disclosures, and acceptable use. These pages help visitors understand how the site works beyond the downloader itself.
+            </p>
+          </div>
+          <div className="mt-6 grid gap-3 sm:grid-cols-2 lg:grid-cols-5">
+            {[
+              { href: "/about", label: "About" },
+              { href: "/contact", label: "Contact" },
+              { href: "/editorial-policy", label: "Editorial Policy" },
+              { href: "/privacy", label: "Privacy Policy" },
+              { href: "/terms", label: "Terms of Service" },
+            ].map((item) => (
+              <Link
+                key={item.href}
+                href={item.href}
+                className="rounded-2xl border border-border bg-background px-4 py-3 text-sm font-medium text-foreground transition-colors hover:border-primary hover:text-primary"
+              >
+                {item.label}
+              </Link>
+            ))}
+          </div>
+        </div>
+      </section>
 
       <RelatedLinks
         title="Top downloader pages"

@@ -24,6 +24,7 @@ export function Footer() {
                 <Link href="/" className="text-sm text-muted-foreground hover:text-foreground transition-colors">Home</Link>
                 <Link href="/tools" className="text-sm text-muted-foreground hover:text-foreground transition-colors">Tools</Link>
                 <Link href="/guides" className="text-sm text-muted-foreground hover:text-foreground transition-colors">Guides</Link>
+                <Link href="/about" className="text-sm text-muted-foreground hover:text-foreground transition-colors">About</Link>
                 <Link href="/#help" className="text-sm text-muted-foreground hover:text-foreground transition-colors">How to Use</Link>
               </div>
             </div>
@@ -53,6 +54,8 @@ export function Footer() {
             <div className="space-y-3">
               <h3 className="text-sm font-semibold uppercase tracking-[0.14em] text-foreground">Trust</h3>
               <div className="flex flex-col gap-2">
+                <Link href="/contact" className="text-sm text-muted-foreground hover:text-foreground transition-colors">Contact</Link>
+                <Link href="/editorial-policy" className="text-sm text-muted-foreground hover:text-foreground transition-colors">Editorial Policy</Link>
                 <Link href="/privacy" className="text-sm text-muted-foreground hover:text-foreground transition-colors">Privacy Policy</Link>
                 <Link href="/terms" className="text-sm text-muted-foreground hover:text-foreground transition-colors">Terms of Service</Link>
                 <a href="mailto:contact@threadsextractor.com" className="text-sm text-muted-foreground hover:text-foreground transition-colors">Contact Us</a>
