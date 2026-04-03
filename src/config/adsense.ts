@@ -11,6 +11,10 @@ function toPubId(clientId: string): string {
   return clientId.replace(/^ca-/, "")
 }
 
+function toAdsTxtPublisherId(clientId: string): string {
+  return clientId.replace(/^ca-pub-/, "pub-")
+}
+
 const publisherId = readEnv(process.env.NEXT_PUBLIC_GOOGLE_ADSENSE_CLIENT_ID) ?? DEFAULT_PUBLISHER_ID
 
 export const adsenseConfig = {
@@ -32,7 +36,7 @@ export const adsenseConfig = {
 export const ADSENSE_CLIENT_ID = adsenseConfig.publisherId
 export const ADSENSE_PUB_ID = toPubId(adsenseConfig.publisherId)
 export const ADSENSE_SCRIPT_SRC = `${ADSENSE_HOST}?client=${adsenseConfig.publisherId}`
-export const ADSENSE_ADS_TXT = `google.com, ${ADSENSE_PUB_ID}, DIRECT, ${ADS_TXT_DIRECT_SELLER_ID}`
+export const ADSENSE_ADS_TXT = `google.com, ${toAdsTxtPublisherId(adsenseConfig.publisherId)}, DIRECT, ${ADS_TXT_DIRECT_SELLER_ID}`
 
 export function hasAdSensePublisher() {
   return Boolean(adsenseConfig.publisherId)
