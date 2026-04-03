@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { rateLimit, validateThreadsUrl } from '@/lib/rate-limiter'
 import { extractThreadsData } from '@/lib/extractor'
-import type { ApiResponse } from '@/lib/types'
+import { buildExtractResponse } from '@/lib/extract-response'
 
 export async function POST(request: NextRequest) {
   try {
@@ -36,15 +36,6 @@ export async function POST(request: NextRequest) {
 
     // 提取视频数据
     const result = await extractThreadsData(url)
-    
-    // 构建响应
-    const response: ApiResponse = {
-      success: true,
-      message: 'Video extraction successful',
-      videos: result.videos,
-      user_profile: result.user_profile,
-      video_metadata: result.video_metadata
-    }
 
     console.log('✅ 提取成功，返回结果')
     console.log('📊 结果统计:', {
@@ -53,7 +44,7 @@ export async function POST(request: NextRequest) {
       hasMetadata: !!result.video_metadata.title || !!result.video_metadata.post_content
     })
     
-    return NextResponse.json(response)
+    return buildExtractResponse(result)
 
   } catch (error) {
     console.error('❌ 提取过程中发生错误:', error)

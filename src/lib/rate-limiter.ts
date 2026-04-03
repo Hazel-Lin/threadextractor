@@ -9,20 +9,27 @@ const rateLimiter = new RateLimiterMemory({
 })
 
 // 获取客户端 IP 地址
-function getClientIP(request: NextRequest): string {
+export function getClientIP(request: NextRequest): string {
   const forwarded = request.headers.get('x-forwarded-for')
   const realIP = request.headers.get('x-real-ip')
+  const connectingIP = request.headers.get('cf-connecting-ip')
   
   if (forwarded) {
     return forwarded.split(',')[0].trim()
   }
   
+  if (connectingIP) {
+    return connectingIP
+  }
+
   if (realIP) {
     return realIP
   }
   
-  // 使用客户端地址作为后备
-  return 'client'
+  // 使用请求特征作为后备，避免所有无IP流量共享一个限流桶
+  const userAgent = request.headers.get('user-agent') || 'unknown'
+  const acceptLanguage = request.headers.get('accept-language') || 'unknown'
+  return `${userAgent}:${acceptLanguage}`.slice(0, 200)
 }
 
 // 限流中间件

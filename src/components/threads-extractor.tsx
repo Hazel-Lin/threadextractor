@@ -40,6 +40,14 @@ interface LoadingStep {
   description?: string
 }
 
+const INITIAL_LOADING_STEPS: LoadingStep[] = [
+  { id: "validate", label: "Validate", status: "pending" },
+  { id: "connect", label: "Connect", status: "pending" },
+  { id: "parse", label: "Parse", status: "pending" },
+  { id: "extract", label: "Extract", status: "pending" },
+  { id: "process", label: "Process", status: "pending" },
+]
+
 export default function ThreadsExtractor() {
   const [url, setUrl] = useState("")
   const [isLoading, setIsLoading] = useState(false)
@@ -48,7 +56,7 @@ export default function ThreadsExtractor() {
   const [videoMetadata, setVideoMetadata] = useState<VideoMetadata | null>(null)
   const [error, setError] = useState("")
   const [success, setSuccess] = useState("")
-  const [loadingSteps, setLoadingSteps] = useState<LoadingStep[]>([])
+  const [loadingSteps, setLoadingSteps] = useState<LoadingStep[]>(INITIAL_LOADING_STEPS)
   const [currentProgress, setCurrentProgress] = useState(0)
 
   // Get backend URL from environment variable or use internal API
@@ -82,6 +90,7 @@ export default function ThreadsExtractor() {
     setUserProfile(null)
     setVideoMetadata(null)
     setCurrentProgress(0)
+    setLoadingSteps(INITIAL_LOADING_STEPS)
 
 
     try {
@@ -122,7 +131,7 @@ export default function ThreadsExtractor() {
       updateStepStatus('extract', 'active')
       await new Promise(resolve => setTimeout(resolve, 600))
 
-      if (data.success) {
+      if (response.ok && data.success && data.videos && data.videos.length > 0) {
         updateStepStatus('extract', 'completed')
         setCurrentProgress(90)
 
@@ -151,7 +160,7 @@ export default function ThreadsExtractor() {
         setSuccess(data.message)
       } else {
         updateStepStatus('extract', 'error')
-        setError(data.message)
+        setError(data.message || "No downloadable video was found.")
       }
     } catch {
       // Find the currently active step and mark it as error

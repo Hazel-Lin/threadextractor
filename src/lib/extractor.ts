@@ -1,6 +1,7 @@
 import puppeteer, { Page } from 'puppeteer'
 import chromium from '@sparticuz/chromium'
 import type { VideoData, UserProfile, VideoMetadata, ExtractResult } from './types'
+import { isLikelyVideoUrl, sanitizeMediaUrl } from './video-download'
 
 // 检测是否为 Vercel 环境
 const isProduction = process.env.NODE_ENV === 'production'
@@ -60,6 +61,7 @@ export async function extractThreadsData(threadUrl: string): Promise<ExtractResu
     console.log('✅ 浏览器启动成功')
     
     const page = await browser.newPage()
+    const networkVideoUrls = new Set<string>()
     
     // 设置用户代理
     await page.setUserAgent(USER_AGENT)
@@ -67,6 +69,18 @@ export async function extractThreadsData(threadUrl: string): Promise<ExtractResu
     // 设置额外的请求头
     await page.setExtraHTTPHeaders({
       'Accept-Language': 'en-US,en;q=0.9',
+    })
+
+    page.on('response', async (response) => {
+      const responseUrl = response.url()
+      const contentType = response.headers()['content-type'] || ''
+
+      if (contentType.includes('video/') || isLikelyVideoUrl(responseUrl)) {
+        const cleanUrl = sanitizeMediaUrl(responseUrl)
+        if (cleanUrl) {
+          networkVideoUrls.add(cleanUrl)
+        }
+      }
     })
     
     // 导航到页面
@@ -84,7 +98,7 @@ export async function extractThreadsData(threadUrl: string): Promise<ExtractResu
     const pageContent = await page.content()
     
     // 提取数据 - 参考Python版本的逻辑
-    const videos = await extractVideoUrls(pageContent, page)
+    const videos = await extractVideoUrls(pageContent, page, Array.from(networkVideoUrls))
     const userProfile = await extractUserProfile(pageContent)
     const videoMetadata = await extractVideoMetadata(pageContent)
     
@@ -110,28 +124,36 @@ export async function extractThreadsData(threadUrl: string): Promise<ExtractResu
 }
 
 // 提取视频URL - 智能优先级选择与验证
-async function extractVideoUrls(html: string, page: Page): Promise<VideoData[]> {
+async function extractVideoUrls(html: string, page: Page, networkUrls: string[] = []): Promise<VideoData[]> {
   console.log('🎥 正在提取视频URL...')
   
   // 按优先级排序的正则表达式模式 - 视频相关关键词优先
   const patterns = [
     // 高优先级：明确的视频URL模式
-    /"video_url":"(https:[^"]*\.mp4[^"]*)"/g,
-    /"playback_url":"(https:[^"]*\.mp4[^"]*)"/g,
-    /"dash_prefetch_experimental":"(https:[^"]*\.mp4[^"]*)"/g,
-    /"video_dash_manifest":"(https:[^"]*\.mp4[^"]*)"/g,
+    /"video_url":"(https:[^"]+)"/g,
+    /"playback_url":"(https:[^"]+)"/g,
+    /"dash_prefetch_experimental":"(https:[^"]+)"/g,
+    /"video_dash_manifest":"(https:[^"]+)"/g,
     
     // 中优先级：通用视频模式
-    /"videoUrl":"(https:[^"]*\.mp4[^"]*)"/g,
-    /<video[^>]*src="([^"]*\.mp4[^"]*)"/g,
+    /"videoUrl":"(https:[^"]+)"/g,
+    /<video[^>]*src="([^"]+)"/g,
     
     // 低优先级：通用URL模式
-    /"src":"(https:[^"]*\.mp4[^"]*)"/g,
-    /"url":"(https:[^"]*\.mp4[^"]*)"/g,
-    /(https:\/\/[^"\s]*\.mp4[^"\s]*)/g
+    /"src":"(https:[^"]+)"/g,
+    /"url":"(https:[^"]+)"/g,
+    /(https:\/\/[^"\s]+(?:mp4|video|playback)[^"\s]*)/g
   ]
 
   const videoUrls: string[] = []
+
+  for (const networkUrl of networkUrls) {
+    const cleanUrl = sanitizeMediaUrl(networkUrl)
+    if (cleanUrl && !videoUrls.includes(cleanUrl)) {
+      videoUrls.push(cleanUrl)
+      console.log(`🌐 从网络响应找到URL: ${cleanUrl.substring(0, 80)}...`)
+    }
+  }
   
   // 第一步：使用正则表达式收集URL
   for (const pattern of patterns) {
@@ -141,7 +163,7 @@ async function extractVideoUrls(html: string, page: Page): Promise<VideoData[]> 
       const url = match[1] || match[0]
       
       // 清理URL格式
-      const cleanUrl = url.replace(/\\\//g, '/')
+      const cleanUrl = sanitizeMediaUrl(url)
       
       if (cleanUrl && !videoUrls.includes(cleanUrl)) {
         videoUrls.push(cleanUrl)
@@ -156,14 +178,15 @@ async function extractVideoUrls(html: string, page: Page): Promise<VideoData[]> 
       const videos = Array.from(document.querySelectorAll('video'))
       return videos.map(video => {
         const src = video.getAttribute('src')
-        return src && src.includes('.mp4') ? src : null
+        return src || null
       }).filter(Boolean)
     })
     
     for (const src of directVideoUrls) {
-      if (src && !videoUrls.includes(src)) {
-        videoUrls.push(src)
-        console.log(`🎬 从video元素找到URL: ${src.substring(0, 80)}...`)
+      const cleanUrl = sanitizeMediaUrl(src)
+      if (cleanUrl && !videoUrls.includes(cleanUrl)) {
+        videoUrls.push(cleanUrl)
+        console.log(`🎬 从video元素找到URL: ${cleanUrl.substring(0, 80)}...`)
       }
     }
   } catch (error) {
@@ -240,7 +263,7 @@ function calculateUrlScore(url: string): number {
   let score = 0
   
   // 1. Instagram CDN 域名优先（+20分）
-  if (url.includes('cdninstagram.com')) {
+  if (url.includes('cdninstagram.com') || url.includes('fbcdn.net')) {
     score += 20
   } else if (url.includes('instagram.com')) {
     score += 15
@@ -292,7 +315,7 @@ function calculateUrlScore(url: string): number {
   }
   
   // 8. MP4格式确认
-  if (url.includes('.mp4')) {
+  if (url.includes('.mp4') || url.includes('mime_type=video') || url.includes('playback')) {
     score += 5
   }
   
@@ -310,14 +333,13 @@ function isValidVideoUrl(url: string): boolean {
       return false
     }
     
-    // 必须包含.mp4
-    if (!url.includes('.mp4')) {
-      return false
-    }
-    
     // 不能包含明显的错误指标
     const invalidIndicators = ['error', 'null', 'undefined', 'missing']
     if (invalidIndicators.some(indicator => url.toLowerCase().includes(indicator))) {
+      return false
+    }
+
+    if (!isLikelyVideoUrl(url)) {
       return false
     }
     
