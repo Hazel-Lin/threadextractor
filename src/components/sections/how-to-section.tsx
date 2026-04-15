@@ -4,24 +4,31 @@ export function HowToSection() {
   const steps = [
     {
       step: "1",
-      title: "Find Your Video",
-      description: "Open the Threads app or website and navigate to the video you want to download. Locate the share button on the post."
+      title: "Copy the original public post URL",
+      description: "Start from the Threads post itself, not an old media asset URL. In repeated checks, the original public post link was the most reliable input."
     },
     {
       step: "2",
-      title: "Copy the Link",
-      description: "Tap or click the share button and select 'Copy Link' from the options. The video URL will be copied to your clipboard."
+      title: "Paste it into the homepage tool",
+      description: "Use the main downloader on the homepage. The maintained workflow is kept there so the tool behavior and the help content stay in sync."
     },
     {
       step: "3",
-      title: "Paste and Extract",
-      description: "Return to Threads Extractor, paste the link into the input field, and click the 'Load' button to start the extraction process."
+      title: "Wait for the result before retrying",
+      description: "If the first request takes a moment, let it finish before pasting a new link. Retrying too early makes it harder to tell a slow response from a failed one."
     },
     {
       step: "4",
-      title: "Download Your Video",
-      description: "Once extraction is complete, click the 'Download Video' button. The video will be saved to your device in high quality."
+      title: "Check browser save behavior",
+      description: "On iPhone and some mobile browsers, a successful result may open in a preview or save into Files/Downloads instead of feeling like a classic direct download."
     }
+  ]
+
+  const failureChecks = [
+    "If the post is not public, the downloader will usually fail.",
+    "If you are reusing an old media URL, restart from the original Threads post URL.",
+    "If a file opened in a new tab, check the browser download controls before retrying.",
+    "If mobile behavior feels inconsistent, compare the result in Safari/Chrome and then in a desktop browser.",
   ]
 
   return (
@@ -29,10 +36,10 @@ export function HowToSection() {
       <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="text-center space-y-4 mb-12">
           <h2 className="text-3xl sm:text-4xl font-bold text-foreground">
-            How to Download Threads Videos
+            How the maintained workflow works
           </h2>
           <p className="text-lg text-muted-foreground max-w-2xl mx-auto">
-            Follow these simple steps to download any video from Threads in just a few seconds
+            The site now keeps one primary downloader workflow. These steps reflect the path that proved most reliable during manual checks of public Threads post URLs.
           </p>
         </div>
 
@@ -57,43 +64,43 @@ export function HowToSection() {
         <div className="mt-12 grid md:grid-cols-2 gap-6">
           <div className="bg-card border border-border rounded-lg p-6">
             <h3 className="text-xl font-bold text-foreground mb-4">
-              Frequently Asked Questions
+              What this workflow is for
             </h3>
             
             <div className="space-y-4">
               <div>
                 <h4 className="text-base font-semibold text-foreground mb-1">
-                  Is it free to use?
+                  Public posts
                 </h4>
                 <p className="text-sm text-muted-foreground">
-                  Yes, completely free with no hidden fees or subscriptions.
+                  The maintained downloader is meant for public Threads post URLs. Private-post access is out of scope.
                 </p>
               </div>
 
               <div>
                 <h4 className="text-base font-semibold text-foreground mb-1">
-                  What video quality?
+                  Browser-based use
                 </h4>
                 <p className="text-sm text-muted-foreground">
-                  We extract videos in the highest quality available from Threads without compression.
+                  The workflow is designed to run in a browser without asking users to install an app or extension.
                 </p>
               </div>
 
               <div>
                 <h4 className="text-base font-semibold text-foreground mb-1">
-                  Need an account?
+                  Manual maintenance
                 </h4>
                 <p className="text-sm text-muted-foreground">
-                  No account needed. Simply paste the link and download.
+                  The homepage tool and the main guides are reviewed together so changes in observed behavior can be reflected quickly.
                 </p>
               </div>
 
               <div>
                 <h4 className="text-base font-semibold text-foreground mb-1">
-                  Private videos?
+                  Responsible use
                 </h4>
                 <p className="text-sm text-muted-foreground">
-                  Only publicly accessible videos can be downloaded.
+                  Users still need to respect copyright, creator rights, and platform rules when saving public media.
                 </p>
               </div>
             </div>
@@ -101,33 +108,15 @@ export function HowToSection() {
 
           <div className="bg-muted/50 border border-border rounded-lg p-6">
             <h3 className="text-xl font-bold text-foreground mb-4">
-              Tips for Best Results
+              Failure checks before you retry
             </h3>
             <ul className="space-y-2 text-sm text-muted-foreground">
-              <li className="flex items-start gap-2">
-                <span className="text-primary font-bold mt-0.5">•</span>
-                <span>Use a stable internet connection</span>
-              </li>
-              <li className="flex items-start gap-2">
-                <span className="text-primary font-bold mt-0.5">•</span>
-                <span>Copy the complete URL without modifications</span>
-              </li>
-              <li className="flex items-start gap-2">
-                <span className="text-primary font-bold mt-0.5">•</span>
-                <span>Refresh and retry if extraction fails</span>
-              </li>
-              <li className="flex items-start gap-2">
-                <span className="text-primary font-bold mt-0.5">•</span>
-                <span>Process one video at a time</span>
-              </li>
-              <li className="flex items-start gap-2">
-                <span className="text-primary font-bold mt-0.5">•</span>
-                <span>Check your downloads folder</span>
-              </li>
-              <li className="flex items-start gap-2">
-                <span className="text-primary font-bold mt-0.5">•</span>
-                <span>Respect copyright and creator rights</span>
-              </li>
+              {failureChecks.map((item) => (
+                <li key={item} className="flex items-start gap-2">
+                  <span className="text-primary font-bold mt-0.5">•</span>
+                  <span>{item}</span>
+                </li>
+              ))}
             </ul>
           </div>
         </div>
@@ -135,4 +124,3 @@ export function HowToSection() {
     </div>
   )
 }
-

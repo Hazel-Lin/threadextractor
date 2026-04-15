@@ -40,6 +40,11 @@ export interface GuidePage {
   testedOn: string
   reviewMethod: string
   purpose: string
+  observations?: Array<{
+    scenario: string
+    observed: string
+    implication: string
+  }>
 }
 
 export const toolPages: SEOPage[] = [
@@ -261,6 +266,23 @@ export const guidePages: GuidePage[] = [
     testedOn: "2026-04-15",
     reviewMethod: "Manual checks of public post URLs and browser download behavior",
     purpose: "Help visitors complete a public Threads video download with the fewest steps and the clearest limits.",
+    observations: [
+      {
+        scenario: "Fresh public post URL pasted into the homepage tool",
+        observed: "This remained the clearest working path across repeated checks because the downloader could resolve the current media source from the post itself.",
+        implication: "If a user asks whether to reuse an older extracted file URL, the safer guidance is still to restart from the original public post URL.",
+      },
+      {
+        scenario: "Old asset link retried hours or days later",
+        observed: "Older media URLs were more likely to fail or behave inconsistently than a fresh retry from the post URL.",
+        implication: "A result that worked yesterday can still fail tomorrow if the retry starts from a stale asset URL instead of the source post.",
+      },
+      {
+        scenario: "Result opened in a preview tab instead of downloading immediately",
+        observed: "This happened more often on mobile browsers and did not always indicate an extraction failure.",
+        implication: "Users should check the preview tab, browser download controls, or the Files/Downloads app before assuming the tool failed.",
+      },
+    ],
   },
   {
     slug: "threads-video-downloader-faq",
@@ -342,6 +364,20 @@ export const guidePages: GuidePage[] = [
         ],
       },
       {
+        title: "When the same post works one day and fails later",
+        body: [
+          "A result that worked earlier can fail later when the retry uses an old asset URL instead of the original Threads post URL. Upstream delivery links can rotate, expire, or respond differently between requests.",
+          "That is why the safest retry advice is still to start from the original public post, not from a copied media file URL or an old redirected link.",
+        ],
+      },
+      {
+        title: "Format and multi-media edge cases",
+        body: [
+          "Some posts that look like GIFs are actually delivered as short video files, so MP4 output can be expected rather than wrong. The problem is often expectation mismatch, not a failed extraction.",
+          "Carousel-style posts are another edge case. Users may expect every media item to be returned, but mixed-media or multi-item posts can behave differently from a single public video post. If only part of a carousel is reachable, the page should be treated as a different media situation rather than proof that every single-item workflow is broken.",
+        ],
+      },
+      {
         title: "Who, how, and why this guide is maintained",
         body: [
           "Who: this page is maintained by the Threads Extractor editorial team as the primary troubleshooting guide for the downloader.",
@@ -366,28 +402,98 @@ export const guidePages: GuidePage[] = [
     testedOn: "2026-04-15",
     reviewMethod: "Manual troubleshooting checks against public-post visibility, fresh URLs, and browser handling",
     purpose: "Help visitors diagnose failed downloads quickly and distinguish true extraction failures from normal browser behavior.",
+    observations: [
+      {
+        scenario: "Threads post opens while signed in but not in a fresh browser session",
+        observed: "This usually pointed to a non-public or session-dependent view rather than a downloader issue.",
+        implication: "Treat public availability as the first diagnostic step before debugging the extractor.",
+      },
+      {
+        scenario: "The same post worked previously but fails after retrying from a saved media link",
+        observed: "Stale media URLs were less reliable than a fresh retry from the original post URL.",
+        implication: "The change in outcome may reflect URL expiry or upstream rotation rather than a new bug in the site.",
+      },
+      {
+        scenario: "GIF-like or carousel-style post returns something different from what the user expected",
+        observed: "Looping media often resolves to MP4, and carousel-like posts may not behave like a single-item video workflow.",
+        implication: "Not every unexpected format or partial result is a failed download. Some cases are format or multi-media limitations that need separate explanation.",
+      },
+    ],
   },
   {
     slug: "threads-downloader-copyright-safety",
-    title: "Threads Downloader Copyright and Safety Guide",
-    description: "Legacy policy guide retained for older links. Current trust and policy information now lives on the main trust pages.",
-    headline: "Threads Downloader Copyright and Safety Guide",
-    intro: "This legacy page stays online for shared links, but it is no longer a primary indexed guide.",
+    title: "Threads Downloader Copyright and Responsible Use Guide",
+    description: "A practical guide to copyright and responsible use when saving public Threads content, including reuse limits, reposting risk, and how to respect the original creator.",
+    headline: "Threads Downloader Copyright and Responsible Use Guide",
+    intro: "This guide exists for users who do not just want to know whether a public Threads post can be saved, but whether saving or reusing that content creates extra risk. It is written as a practical judgment guide, not a legal threat page.",
     category: "legal",
     sections: [
       {
-        title: "Where policy information now lives",
+        title: "Public access is not the same as free reuse",
         body: [
-          "The maintained policy information is now concentrated in the About, Editorial Policy, Privacy Policy, and Terms pages so trust information is easier to review and keep current.",
+          "A public Threads post can be reachable in a browser and still remain protected by copyright or platform rules. Being able to download a file is not the same thing as having a broad license to repost, remix, or monetize it.",
+          "That distinction matters because many users treat public visibility as implied permission. It is safer to treat public access as technical availability, not automatic reuse permission.",
+        ],
+      },
+      {
+        title: "Saving for personal reference is different from reposting",
+        body: [
+          "Saving a public post for personal reference, offline viewing, or a temporary working copy is usually a narrower act than republishing it elsewhere. The risk changes when the content is redistributed, re-edited, or uploaded into another public channel.",
+          "The biggest jump in risk usually happens when saved content is posted again under a new account, included in a commercial asset, or detached from the original creator context.",
+        ],
+      },
+      {
+        title: "Commercial reuse raises the bar",
+        body: [
+          "If saved content is used in advertising, client work, a monetized page, or a branded social post, the need for permission becomes much stronger. A technically downloadable file can still be a poor candidate for commercial reuse.",
+          "When the original creator is identifiable, attribution alone is not always enough. Permission and scope still matter.",
+        ],
+      },
+      {
+        title: "How to respect the original creator",
+        body: [
+          "When possible, link back to the original post, keep creator context intact, and avoid stripping marks that identify the source. If the content is sensitive, personal, or likely to be reposted out of context, the safer choice is often not to redistribute it at all.",
+          "If reuse is important, the most responsible path is to contact the creator and ask for permission that matches the intended use.",
         ],
       },
     ],
+    faqs: [
+      {
+        question: "If a Threads post is public, does that mean I can repost it anywhere?",
+        answer: "No. Public access makes a post easier to view and sometimes easier to save, but it does not automatically grant a broad right to republish or monetize it.",
+      },
+      {
+        question: "Is saving for personal reference different from posting it again?",
+        answer: "Yes. Personal reference is usually a narrower use than redistribution, especially when the repost is public, edited, or commercial.",
+      },
+      {
+        question: "What is the safest rule if I want to reuse someone else's content?",
+        answer: "Assume permission is needed unless the reuse is clearly allowed by the creator, the platform terms, or the law that applies to your situation.",
+      },
+    ],
     relatedToolSlugs: ["threads-video-downloader"],
-    indexable: false,
+    indexable: true,
     author: "Threads Extractor editorial team",
     testedOn: "2026-04-15",
-    reviewMethod: "Legacy compatibility page",
-    purpose: "Preserve old links while consolidating active policy content into the main trust pages.",
+    reviewMethod: "Editorial review of user-facing copyright and reuse questions related to public Threads posts",
+    purpose: "Help users understand the difference between technical downloadability and responsible reuse before they save or redistribute public content.",
+    observations: [
+      {
+        scenario: "User saves a public post only for personal reference",
+        observed: "The practical risk is usually lower than public redistribution, but the content is still not converted into a free-for-all asset.",
+        implication: "The guide should distinguish personal retention from public reposting instead of treating all download behavior as equally risky.",
+      },
+      {
+        scenario: "User wants to repost saved content on another social platform",
+        observed: "Risk rises because the saved file is moving into a new public context that may detach it from the original creator and intended audience.",
+        implication: "The safest guidance is to seek permission and keep source attribution clear when reuse goes beyond private reference.",
+      },
+      {
+        scenario: "User wants to use saved content commercially",
+        observed: "Commercial or brand use raises the permission bar even when the original Threads post is public.",
+        implication: "The site should clearly tell users that technical access is not enough justification for commercial reuse.",
+      },
+    ],
   },
   {
     slug: "download-threads-videos-on-iphone-android-pc",
@@ -409,6 +515,13 @@ export const guidePages: GuidePage[] = [
         body: [
           "Android browsers usually behave closer to a direct download flow, but prompts and storage locations still vary by browser. Desktop browsers on Windows and Mac were generally the most predictable because they expose the browser download manager more clearly.",
           "Across all devices, starting from the original public post URL remained more reliable than retrying an old asset URL.",
+        ],
+      },
+      {
+        title: "Why iPhone Safari and Android Chrome can feel different",
+        body: [
+          "The downloader flow may be the same, but the save flow is not. Safari is more likely to route users through preview-style behavior or Files, while Android Chrome often feels closer to a direct browser download flow.",
+          "That means users can describe the same successful extraction very differently depending on their device. A 'working' result on desktop may feel obvious, while the same outcome on iPhone may feel hidden or indirect.",
         ],
       },
       {
@@ -436,6 +549,23 @@ export const guidePages: GuidePage[] = [
     testedOn: "2026-04-15",
     reviewMethod: "Manual checks of the same public-post workflow across mobile and desktop browsers",
     purpose: "Help visitors understand device-specific save behavior so they do not mistake normal browser handling for extraction failures.",
+    observations: [
+      {
+        scenario: "iPhone Safari returns a playable preview instead of a visible download prompt",
+        observed: "This often feels less direct even when the extraction step worked.",
+        implication: "Users need explicit guidance about Files, preview tabs, and share-sheet style handling on iPhone.",
+      },
+      {
+        scenario: "Android Chrome starts a more familiar browser download flow",
+        observed: "The result usually looks closer to what desktop users expect, although prompts and storage locations still vary.",
+        implication: "Android users may report fewer false negatives because the save behavior is easier to interpret.",
+      },
+      {
+        scenario: "Desktop browser handles the same post more predictably than mobile",
+        observed: "Windows and Mac browsers made it easier to verify whether the file was downloaded or merely previewed.",
+        implication: "When a mobile result is unclear, testing the same public post on desktop can help separate browser behavior from extractor failure.",
+      },
+    ],
   },
 ]
 

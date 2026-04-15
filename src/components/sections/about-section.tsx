@@ -1,27 +1,27 @@
 import { Card } from "@/components/ui/card"
-import { Video, Download, Shield, Zap } from "lucide-react"
+import { ClipboardCheck, Download, Shield, TriangleAlert } from "lucide-react"
 
 export function AboutSection() {
   const features = [
     {
-      icon: Video,
-      title: "High Quality Video Extraction",
-      description: "Extract videos from Threads in their original quality. Our advanced extraction technology ensures you get the best possible video quality available from the source."
+      icon: ClipboardCheck,
+      title: "Maintained workflow",
+      description: "The site keeps one primary downloader entry point on the homepage and a small set of support guides so instructions and tool behavior stay aligned."
     },
     {
       icon: Download,
-      title: "One-Click Download",
-      description: "Simple and fast download process. Just paste the Threads link, click extract, and download your video instantly. No complicated steps or unnecessary waiting."
+      title: "Public-post use only",
+      description: "The downloader is intended for public Threads post URLs. Private content, account-only views, and bypass-style use cases are out of scope."
     },
     {
       icon: Shield,
-      title: "Safe and Secure",
-      description: "Your privacy is our priority. We don't store any of your data or download history. All processing happens securely, and no personal information is collected or shared."
+      title: "Manual review of guidance",
+      description: "Support content is updated against observed downloader behavior and browser save behavior. AI may help draft copy, but final guidance is manually reviewed."
     },
     {
-      icon: Zap,
-      title: "Lightning Fast",
-      description: "Optimized for speed and efficiency. Our servers are designed to process your requests quickly, so you can download videos without delays or interruptions."
+      icon: TriangleAlert,
+      title: "Known limits are documented",
+      description: "The site explicitly calls out cases that fail most often, including private posts, stale media URLs, and browser-specific file handling differences."
     }
   ]
 
@@ -30,11 +30,10 @@ export function AboutSection() {
       <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="text-center space-y-4 mb-12">
           <h2 className="text-3xl sm:text-4xl font-bold text-foreground">
-            Why Choose Threads Extractor?
+            What the maintained site focuses on
           </h2>
           <p className="text-lg text-muted-foreground max-w-2xl mx-auto">
-            The most reliable and user-friendly tool for downloading Threads videos. 
-            Built with modern technology to provide you with the best experience.
+            The site has been narrowed to one main downloader workflow and a small support set. The goal is to make the maintained pages easier to trust, easier to review, and easier to keep current.
           </p>
         </div>
 
@@ -60,16 +59,13 @@ export function AboutSection() {
 
         <div className="max-w-3xl mx-auto p-6 bg-card border border-border rounded-lg">
           <h3 className="text-xl font-bold text-foreground mb-3 text-center">
-            About Our Service
+            What changed recently
           </h3>
           <p className="text-muted-foreground leading-relaxed text-center">
-            Threads Extractor is a free online tool for downloading videos from Threads. 
-            Built with cutting-edge web technologies, we provide a fast, reliable, and secure experience. 
-            We respect content creators&apos; rights and encourage responsible use in compliance with copyright laws.
+            The site reduced near-duplicate topic pages, trimmed ad placements on support content, and moved more of the visible guidance toward tested behavior, failure checks, and device-specific handling.
           </p>
         </div>
       </div>
     </div>
   )
 }
-

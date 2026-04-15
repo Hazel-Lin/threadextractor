@@ -1,13 +1,11 @@
 import type { Metadata } from "next"
 import ThreadsExtractor from "@/components/threads-extractor"
-import { ResponsiveAd } from "@/components/ads"
 import { AboutSection } from "@/components/sections/about-section"
 import { HowToSection } from "@/components/sections/how-to-section"
 import { FAQSection } from "@/components/seo/faq-section"
 import { JsonLd } from "@/components/seo/json-ld"
 import { RelatedLinks } from "@/components/seo/related-links"
 import Link from "next/link"
-import { adsenseConfig, hasManualAdSlot } from "@/config/adsense"
 import { buildMetadata } from "@/lib/metadata"
 import { indexableGuidePages } from "@/lib/seo-pages"
 import { buildBreadcrumbSchema, buildFaqSchema, buildHowToSchema, buildSoftwareApplicationSchema } from "@/lib/schema"
@@ -26,8 +24,6 @@ export const metadata: Metadata = buildMetadata({
 })
 
 export default function Home() {
-  const afterExtractorSlot = adsenseConfig.ads.homePage.afterExtractor
-  const afterHelpSlot = adsenseConfig.ads.homePage.afterHelp
   const trustSignals = [
     {
       title: "Who maintains this site",
@@ -41,6 +37,11 @@ export default function Home() {
       title: "Why this site exists",
       body: "The site is meant to help users complete a public-post download workflow and troubleshoot normal failure cases. It is not meant to publish near-duplicate keyword pages.",
     },
+  ]
+  const recentChecks = [
+    "Starting from the original public Threads post URL was more reliable than retrying an old media asset URL.",
+    "Private posts remained the clearest true blocker for a public web downloader.",
+    "Several mobile failures were really save-location or preview-flow issues rather than extraction failures.",
   ]
   const homeFaqs = [
     {
@@ -93,20 +94,6 @@ export default function Home() {
 
       <AboutSection />
 
-      {hasManualAdSlot(afterExtractorSlot) && (
-        <section className="px-4 py-4 sm:px-6 lg:px-8">
-          <div className="mx-auto max-w-4xl rounded-2xl border border-dashed border-border bg-muted/30 px-3 py-4">
-            <ResponsiveAd
-              slot={afterExtractorSlot}
-              format="rectangle"
-              className="mx-auto min-h-[280px]"
-              style={{ minHeight: "280px" }}
-              lazyLoad={adsenseConfig.settings.enableLazyLoad}
-            />
-          </div>
-        </section>
-      )}
-
       <section id="help">
         <HowToSection />
       </section>
@@ -129,6 +116,25 @@ export default function Home() {
             ))}
           </div>
           <p className="mt-5 text-xs text-muted-foreground">Last reviewed: 2026-04-15</p>
+        </div>
+      </section>
+
+      <section className="px-4 py-10 sm:px-6 lg:px-8">
+        <div className="mx-auto max-w-5xl rounded-3xl border border-border bg-card p-6 shadow-sm">
+          <div className="space-y-3">
+            <p className="text-sm font-semibold uppercase tracking-[0.18em] text-primary">Recent Checks</p>
+            <h2 className="text-2xl font-bold text-foreground">What the team has been checking recently</h2>
+            <p className="max-w-3xl text-sm leading-6 text-muted-foreground">
+              The site now surfaces recent observations directly on the homepage so visitors can understand the practical limits of the workflow before trying it.
+            </p>
+          </div>
+          <ul className="mt-6 space-y-3">
+            {recentChecks.map((item) => (
+              <li key={item} className="rounded-2xl border border-border bg-background px-4 py-4 text-sm leading-6 text-muted-foreground">
+                {item}
+              </li>
+            ))}
+          </ul>
         </div>
       </section>
 
@@ -172,19 +178,6 @@ export default function Home() {
           href: `/guides/${page.slug}`,
         }))}
       />
-
-      {hasManualAdSlot(afterHelpSlot) && (
-        <section className="px-4 pb-10 pt-4 sm:px-6 lg:px-8">
-          <div className="mx-auto max-w-6xl overflow-hidden rounded-2xl border border-border bg-card/60 px-3 py-4 shadow-sm">
-            <ResponsiveAd
-              slot={afterHelpSlot}
-              className="mx-auto min-h-[90px]"
-              style={{ minHeight: "90px" }}
-              lazyLoad={adsenseConfig.settings.enableLazyLoad}
-            />
-          </div>
-        </section>
-      )}
     </div>
   )
 }

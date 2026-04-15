@@ -1,10 +1,10 @@
 import { notFound } from "next/navigation"
 import type { Metadata } from "next"
 import { Breadcrumbs } from "@/components/seo/breadcrumbs"
-import { ContentAd } from "@/components/seo/content-ad"
 import { ContentSections } from "@/components/seo/content-sections"
 import { FAQSection } from "@/components/seo/faq-section"
 import { JsonLd } from "@/components/seo/json-ld"
+import { ObservedCases } from "@/components/seo/observed-cases"
 import { PageHero } from "@/components/seo/page-hero"
 import { RelatedLinks } from "@/components/seo/related-links"
 import { buildMetadata } from "@/lib/metadata"
@@ -115,7 +115,7 @@ export default async function GuideDetailPage({ params }: { params: Promise<{ sl
         </div>
       </section>
       <ContentSections sections={page.sections} />
-      <ContentAd minHeight={250} />
+      {page.observations?.length ? <ObservedCases items={page.observations} /> : null}
       {page.faqs?.length ? <FAQSection items={page.faqs} /> : null}
       <RelatedLinks title="Related maintained guides" links={relatedGuideLinks} />
     </div>

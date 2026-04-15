@@ -2,7 +2,6 @@ import { notFound } from "next/navigation"
 import type { Metadata } from "next"
 import ThreadsExtractor from "@/components/threads-extractor"
 import { Breadcrumbs } from "@/components/seo/breadcrumbs"
-import { ContentAd } from "@/components/seo/content-ad"
 import { ContentSections } from "@/components/seo/content-sections"
 import { FAQSection } from "@/components/seo/faq-section"
 import { JsonLd } from "@/components/seo/json-ld"
@@ -96,7 +95,6 @@ export default async function ToolLandingPage({ params }: { params: Promise<{ sl
       </section>
       <ContentSections sections={page.sections} />
       <FAQSection items={page.faqs} />
-      <ContentAd minHeight={250} />
       <RelatedLinks
         title="Maintained Threads guides"
         links={relatedGuideLinks.length ? relatedGuideLinks : indexableGuidePages.map((guide) => ({
