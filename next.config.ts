@@ -1,4 +1,5 @@
 import type { NextConfig } from "next";
+import { legacyToolRedirects } from "./src/lib/legacy-redirects";
 
 const nextConfig: NextConfig = {
   images: {
@@ -45,6 +46,12 @@ const nextConfig: NextConfig = {
     })
     
     return config
+  },
+  async redirects() {
+    return legacyToolRedirects.map((redirect) => ({
+      ...redirect,
+      permanent: true,
+    }))
   },
 };
 
