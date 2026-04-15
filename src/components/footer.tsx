@@ -1,16 +1,10 @@
 import Link from "next/link"
 
 export function Footer() {
-  const toolLinks = [
-    { href: "/threads-video-downloader", label: "Threads Video Downloader" },
-    { href: "/download-threads-video-online", label: "Download Threads Video Online" },
-    { href: "/threads-to-mp4", label: "Threads to MP4" },
-  ]
-
   const guideLinks = [
     { href: "/guides/how-to-download-videos-from-threads", label: "How to Download Videos from Threads" },
-    { href: "/guides/threads-video-downloader-faq", label: "Threads Downloader FAQ" },
     { href: "/guides/threads-video-not-downloading", label: "Threads Video Not Downloading" },
+    { href: "/guides/download-threads-videos-on-iphone-android-pc", label: "Download Threads Videos on iPhone, Android, and PC" },
   ]
 
   return (
@@ -22,7 +16,6 @@ export function Footer() {
               <h3 className="text-sm font-semibold uppercase tracking-[0.14em] text-foreground">Site</h3>
               <div className="flex flex-col gap-2">
                 <Link href="/" className="text-sm text-muted-foreground hover:text-foreground transition-colors">Home</Link>
-                <Link href="/tools" className="text-sm text-muted-foreground hover:text-foreground transition-colors">Tools</Link>
                 <Link href="/guides" className="text-sm text-muted-foreground hover:text-foreground transition-colors">Guides</Link>
                 <Link href="/about" className="text-sm text-muted-foreground hover:text-foreground transition-colors">About</Link>
                 <Link href="/#help" className="text-sm text-muted-foreground hover:text-foreground transition-colors">How to Use</Link>
@@ -30,13 +23,11 @@ export function Footer() {
             </div>
 
             <div className="space-y-3">
-              <h3 className="text-sm font-semibold uppercase tracking-[0.14em] text-foreground">Tool Pages</h3>
+              <h3 className="text-sm font-semibold uppercase tracking-[0.14em] text-foreground">Workflow</h3>
               <div className="flex flex-col gap-2">
-                {toolLinks.map((link) => (
-                  <Link key={link.href} href={link.href} className="text-sm text-muted-foreground hover:text-foreground transition-colors">
-                    {link.label}
-                  </Link>
-                ))}
+                <Link href="/" className="text-sm text-muted-foreground hover:text-foreground transition-colors">Main Downloader</Link>
+                <Link href="/guides/how-to-download-videos-from-threads" className="text-sm text-muted-foreground hover:text-foreground transition-colors">Basic Download Steps</Link>
+                <Link href="/guides/threads-video-not-downloading" className="text-sm text-muted-foreground hover:text-foreground transition-colors">Failure Checks</Link>
               </div>
             </div>
 
@@ -65,9 +56,7 @@ export function Footer() {
 
           <div className="max-w-2xl mx-auto">
             <p className="text-sm text-muted-foreground leading-relaxed">
-              Threads Extractor is a free online tool for downloading Threads videos. 
-              We respect intellectual property rights and encourage users to comply with 
-              copyright laws and the terms of service of social media platforms.
+              Threads Extractor is a free tool for public Threads video workflows. The maintained site centers on one downloader entry point plus a small set of manually reviewed support guides.
             </p>
           </div>
 

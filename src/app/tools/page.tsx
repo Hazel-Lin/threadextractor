@@ -10,9 +10,10 @@ import { buildBreadcrumbSchema, buildWebsiteSchema } from "@/lib/schema"
 export const metadata: Metadata = buildMetadata({
   title: "Threads Downloader Tools",
   description:
-    "Browse long-tail Threads downloader pages covering public video downloads, GIF-style media, MP4 workflows, carousel intent, and browser-based download use cases.",
+    "Legacy topic index retained for compatibility. The maintained downloader now lives on the homepage.",
   path: "/tools",
   keywords: ["threads downloader tools", "threads media tools", "threads video downloader pages"],
+  noIndex: true,
 })
 
 export default function ToolsIndexPage() {
@@ -28,9 +29,9 @@ export default function ToolsIndexPage() {
         ]}
       />
       <PageHero
-        eyebrow="Tool Hub"
-        title="Threads Downloader Tools and Landing Pages"
-        description="Explore focused downloader pages for Threads video, MP4, GIF-style media, carousel intent, and browser-based online download workflows."
+        eyebrow="Legacy Index"
+        title="Legacy Threads Topic Pages"
+        description="These older topic pages remain online for existing links, but the maintained downloader experience now lives on the homepage."
       />
       <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 pb-6">
         <Breadcrumbs
@@ -41,7 +42,7 @@ export default function ToolsIndexPage() {
         />
       </div>
       <RelatedLinks
-        title="All downloader landing pages"
+        title="Legacy topic pages"
         links={toolPages.map((tool) => ({
           title: tool.title,
           description: tool.description,

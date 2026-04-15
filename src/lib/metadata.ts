@@ -7,6 +7,7 @@ interface MetadataInput {
   path: string
   keywords?: string[]
   type?: "website" | "article"
+  noIndex?: boolean
 }
 
 export function buildMetadata({
@@ -15,6 +16,7 @@ export function buildMetadata({
   path,
   keywords = [],
   type = "website",
+  noIndex = false,
 }: MetadataInput): Metadata {
   const url = absoluteUrl(path)
   const fullTitle = `${title} | ${siteConfig.name}`
@@ -42,10 +44,10 @@ export function buildMetadata({
       creator: siteConfig.twitterHandle,
     },
     robots: {
-      index: true,
+      index: !noIndex,
       follow: true,
       googleBot: {
-        index: true,
+        index: !noIndex,
         follow: true,
         "max-video-preview": -1,
         "max-image-preview": "large",

@@ -105,10 +105,14 @@ export function buildArticleSchema({
   headline,
   description,
   path,
+  authorName = siteConfig.name,
+  dateModified,
 }: {
   headline: string
   description: string
   path: string
+  authorName?: string
+  dateModified?: string
 }) {
   return {
     "@context": "https://schema.org",
@@ -117,7 +121,7 @@ export function buildArticleSchema({
     description,
     author: {
       "@type": "Organization",
-      name: siteConfig.name,
+      name: authorName,
     },
     publisher: {
       "@type": "Organization",
@@ -128,5 +132,6 @@ export function buildArticleSchema({
       },
     },
     mainEntityOfPage: absoluteUrl(path),
+    ...(dateModified ? { dateModified } : {}),
   }
 }

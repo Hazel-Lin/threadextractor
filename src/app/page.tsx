@@ -9,7 +9,7 @@ import { RelatedLinks } from "@/components/seo/related-links"
 import Link from "next/link"
 import { adsenseConfig, hasManualAdSlot } from "@/config/adsense"
 import { buildMetadata } from "@/lib/metadata"
-import { guidePages, toolPages } from "@/lib/seo-pages"
+import { indexableGuidePages } from "@/lib/seo-pages"
 import { buildBreadcrumbSchema, buildFaqSchema, buildHowToSchema, buildSoftwareApplicationSchema } from "@/lib/schema"
 
 export const metadata: Metadata = buildMetadata({
@@ -28,16 +28,30 @@ export const metadata: Metadata = buildMetadata({
 export default function Home() {
   const afterExtractorSlot = adsenseConfig.ads.homePage.afterExtractor
   const afterHelpSlot = adsenseConfig.ads.homePage.afterHelp
+  const trustSignals = [
+    {
+      title: "Who maintains this site",
+      body: "Threads Extractor is maintained by the site editorial team. The same team reviews the homepage workflow and the published support guides.",
+    },
+    {
+      title: "How guidance is reviewed",
+      body: "Support pages are updated against manual checks of public Threads post URLs and browser save behavior. AI can assist with drafting, but the published guidance is manually reviewed.",
+    },
+    {
+      title: "Why this site exists",
+      body: "The site is meant to help users complete a public-post download workflow and troubleshoot normal failure cases. It is not meant to publish near-duplicate keyword pages.",
+    },
+  ]
   const homeFaqs = [
     {
       question: "Can I download public Threads videos online?",
       answer:
-        "Yes. This site is built for public Threads post workflows and provides a browser-based downloader experience supported by related guides and FAQs.",
+        "Yes. The maintained workflow on this site is built for public Threads post URLs and is supported by manually reviewed guides for troubleshooting and device behavior.",
     },
     {
-      question: "Does the site cover Threads to MP4 and related queries?",
+      question: "What is the best way to retry a failed download?",
       answer:
-        "Yes. The site includes dedicated pages for Threads to MP4, online download workflows, GIF-style media, carousel intent, and troubleshooting.",
+        "Start again from the original public Threads post URL. Reusing an old media asset URL is less reliable because upstream links can expire or rotate.",
     },
     {
       question: "What should I do if a Threads video is not downloading?",
@@ -72,7 +86,7 @@ export default function Home() {
       <section id="home" className="flex-1 flex items-center justify-center bg-background">
         <ThreadsExtractor
           title="Download Public Threads Videos Online"
-          description="Paste a public Threads post URL to start the downloader, then explore related pages for MP4, GIF-style media, carousel intent, and troubleshooting."
+          description="Paste a public Threads post URL to start the maintained downloader. For failure checks and device-specific save behavior, use the guides below."
           submitLabel="Start Download"
         />
       </section>
@@ -95,6 +109,27 @@ export default function Home() {
 
       <section id="help">
         <HowToSection />
+      </section>
+
+      <section className="px-4 py-10 sm:px-6 lg:px-8">
+        <div className="mx-auto max-w-5xl rounded-3xl border border-border bg-card p-6 shadow-sm">
+          <div className="space-y-3">
+            <p className="text-sm font-semibold uppercase tracking-[0.18em] text-primary">Who / How / Why</p>
+            <h2 className="text-2xl font-bold text-foreground">How the maintained content is produced</h2>
+            <p className="max-w-3xl text-sm leading-6 text-muted-foreground">
+              The site now keeps one primary downloader page and a small set of maintained support guides. That makes the workflow easier to review and reduces thin topic duplication.
+            </p>
+          </div>
+          <div className="mt-6 grid gap-4 md:grid-cols-3">
+            {trustSignals.map((item) => (
+              <div key={item.title} className="rounded-2xl border border-border bg-background p-5">
+                <h3 className="text-lg font-semibold text-foreground">{item.title}</h3>
+                <p className="mt-3 text-sm leading-6 text-muted-foreground">{item.body}</p>
+              </div>
+            ))}
+          </div>
+          <p className="mt-5 text-xs text-muted-foreground">Last reviewed: 2026-04-15</p>
+        </div>
       </section>
 
       <FAQSection title="Homepage FAQ" items={homeFaqs} />
@@ -130,17 +165,8 @@ export default function Home() {
       </section>
 
       <RelatedLinks
-        title="Top downloader pages"
-        links={toolPages.map((page) => ({
-          title: page.title,
-          description: page.description,
-          href: `/${page.slug}`,
-        }))}
-      />
-
-      <RelatedLinks
-        title="Helpful Threads guides"
-        links={guidePages.map((page) => ({
+        title="Maintained Threads guides"
+        links={indexableGuidePages.map((page) => ({
           title: page.title,
           description: page.description,
           href: `/guides/${page.slug}`,

@@ -4,7 +4,7 @@ import { JsonLd } from "@/components/seo/json-ld"
 import { PageHero } from "@/components/seo/page-hero"
 import { RelatedLinks } from "@/components/seo/related-links"
 import { buildMetadata } from "@/lib/metadata"
-import { guidePages } from "@/lib/seo-pages"
+import { indexableGuidePages } from "@/lib/seo-pages"
 import { buildBreadcrumbSchema, buildWebsiteSchema } from "@/lib/schema"
 
 export const metadata: Metadata = buildMetadata({
@@ -30,7 +30,7 @@ export default function GuidesIndexPage() {
       <PageHero
         eyebrow="Guide Hub"
         title="Threads Download Guides and Troubleshooting"
-        description="Browse practical guides for using a Threads downloader, handling failed downloads, understanding format behavior, and choosing the right workflow for each device."
+        description="Browse the maintained Threads guides: the basic download workflow, the most common failure checks, and device-specific browser behavior."
       />
       <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 pb-6">
         <Breadcrumbs
@@ -41,8 +41,8 @@ export default function GuidesIndexPage() {
         />
       </div>
       <RelatedLinks
-        title="All Threads guides"
-        links={guidePages.map((guide) => ({
+        title="Maintained Threads guides"
+        links={indexableGuidePages.map((guide) => ({
           title: guide.title,
           description: guide.description,
           href: `/guides/${guide.slug}`,

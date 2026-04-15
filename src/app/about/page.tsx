@@ -22,14 +22,14 @@ const principles = [
       "The site is designed around publicly accessible Threads posts. It is not positioned as a private-content bypass or account-based media archive.",
   },
   {
-    title: "Useful content around the tool",
+    title: "One maintained downloader entry point",
     description:
-      "The website publishes landing pages, tutorials, troubleshooting guides, and policy pages so visitors can understand how Threads media download workflows behave before clicking anything.",
+      "The homepage is the maintained downloader entry point. Support content is kept to a small set of reviewed guides instead of spreading the same workflow across many near-duplicate pages.",
   },
   {
-    title: "Advertising supports the free service",
+    title: "Manual review before publication",
     description:
-      "Google AdSense helps fund hosting and maintenance. Ads are intended to sit between substantive content sections rather than replacing the core downloader experience.",
+      "Guides are reviewed against observed downloader behavior and browser save behavior. AI may assist with drafting, but the published guidance is manually reviewed before release.",
   },
 ]
 
@@ -62,9 +62,8 @@ export default function AboutPage() {
             <p className="text-sm font-semibold uppercase tracking-[0.18em] text-primary">About</p>
             <h1 className="text-4xl font-bold text-foreground">About Threads Extractor</h1>
             <p className="max-w-3xl text-base leading-7 text-muted-foreground">
-              Threads Extractor is an information-rich utility site built around public Threads media workflows.
-              The goal is simple: help visitors understand how downloading public Threads videos and related media
-              works, then provide a straightforward browser-based tool supported by educational pages and clear site policies.
+              Threads Extractor is a small utility site focused on one job: helping visitors use a browser-based workflow to save public Threads videos.
+              The site pairs that tool with a short set of maintained support guides so visitors can understand what works, what fails, and how device behavior changes the save flow.
             </p>
           </div>
 
@@ -83,12 +82,11 @@ export default function AboutPage() {
             <CardContent className="space-y-4 p-6">
               <h2 className="text-2xl font-semibold text-foreground">What the website publishes</h2>
               <p className="leading-7 text-muted-foreground">
-                The site includes long-tail downloader landing pages, device-specific how-to content, troubleshooting,
-                and legal-use guidance. Each page is intended to address a real search question rather than exist as a thin copy
-                of the homepage.
+                The maintained site publishes one primary downloader page, a small set of manually reviewed troubleshooting and device guides,
+                and trust pages that explain policies, contact routes, and responsible use.
               </p>
               <p className="leading-7 text-muted-foreground">
-                If you want editorial standards, review workflow details, or update policies, see the{" "}
+                If you want review standards, publication details, or update policies, see the{" "}
                 <Link href="/editorial-policy" className="text-primary hover:underline">
                   Editorial Policy
                 </Link>

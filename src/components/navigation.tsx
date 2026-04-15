@@ -14,7 +14,6 @@ export function Navigation() {
   const toggleMenu = () => setIsMenuOpen(!isMenuOpen)
   const navItems = [
     { href: "/", label: "Home" },
-    { href: "/tools", label: "Tools" },
     { href: "/guides", label: "Guides" },
     { href: "/about", label: "About" },
     { href: "/#help", label: "How It Works" },

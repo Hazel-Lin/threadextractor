@@ -17,12 +17,12 @@ export const metadata: Metadata = buildMetadata({
 
 const policyBlocks = [
   {
-    title: "Original page intent",
-    body: "Every page should answer a distinct user question, such as downloading a public Threads video, understanding why a download failed, or learning how different media types behave.",
+    title: "Content must map to a maintained workflow",
+    body: "New content must support the maintained downloader, the core troubleshooting flow, or a real device-specific behavior difference. The site avoids publishing near-duplicate topic pages that restate the same workflow.",
   },
   {
-    title: "Review and updates",
-    body: "Guides and policy pages are reviewed when the downloader behavior changes, when the site adds a new landing page, or when legal and advertising disclosures need to be clarified.",
+    title: "Manual review before publishing",
+    body: "Guides are reviewed against observed downloader behavior, browser save behavior, or policy updates before publication. AI may assist with drafting, but final copy is manually reviewed.",
   },
   {
     title: "Advertising separation",
@@ -30,7 +30,7 @@ const policyBlocks = [
   },
   {
     title: "Public-media scope",
-    body: "The site describes workflows for public Threads posts only. Pages should not imply support for private account access, unauthorized content bypass, or account takeovers.",
+    body: "The site documents workflows for public Threads posts only. Pages must not imply support for private account access, unauthorized content bypass, or account takeovers.",
   },
 ]
 
@@ -62,8 +62,7 @@ export default function EditorialPolicyPage() {
             <p className="text-sm font-semibold uppercase tracking-[0.18em] text-primary">Editorial Policy</p>
             <h1 className="text-4xl font-bold text-foreground">Editorial Policy</h1>
             <p className="max-w-3xl text-base leading-7 text-muted-foreground">
-              This site combines a free web utility with informational content. The editorial policy exists to make that balance
-              explicit for visitors, search engines, and advertising reviewers.
+              This site combines a free web utility with a small set of maintained support pages. The policy exists to explain how those pages are reviewed, when they are updated, and why the site keeps the indexed content set intentionally small.
             </p>
           </div>
 
@@ -86,7 +85,7 @@ export default function EditorialPolicyPage() {
                 <Link href="/contact" className="text-primary hover:underline">
                   Contact page
                 </Link>
-                . Material corrections are reflected in the relevant page updates.
+                . Material corrections are reflected in the relevant page updates after review.
               </p>
             </CardContent>
           </Card>

@@ -9,7 +9,7 @@ import { JsonLd } from "@/components/seo/json-ld"
 import { PageHero } from "@/components/seo/page-hero"
 import { RelatedLinks } from "@/components/seo/related-links"
 import { buildMetadata } from "@/lib/metadata"
-import { getGuidePage, getToolPage, guidePages, toolPages } from "@/lib/seo-pages"
+import { getGuidePage, getToolPage, indexableGuidePages, toolPages } from "@/lib/seo-pages"
 import {
   buildBreadcrumbSchema,
   buildFaqSchema,
@@ -33,6 +33,7 @@ export async function generateMetadata({ params }: { params: Promise<{ slug: str
     description: page.description,
     path: `/${page.slug}`,
     keywords: [page.keyword, "threads downloader", "threads media downloader"],
+    noIndex: !page.indexable,
   })
 }
 
@@ -43,18 +44,10 @@ export default async function ToolLandingPage({ params }: { params: Promise<{ sl
     notFound()
   }
 
-  const relatedToolLinks = page.relatedToolSlugs
-    .map((slug) => getToolPage(slug))
-    .filter((item): item is NonNullable<typeof item> => Boolean(item))
-    .map((item) => ({
-      title: item.title,
-      description: item.description,
-      href: `/${item.slug}`,
-    }))
-
   const relatedGuideLinks = page.relatedGuideSlugs
     .map((slug) => getGuidePage(slug))
-    .filter((item): item is NonNullable<typeof item> => Boolean(item))
+    .filter((item): item is Exclude<typeof item, undefined> => item !== undefined)
+    .filter((item) => item.indexable)
     .map((item) => ({
       title: item.title,
       description: item.description,
@@ -89,7 +82,7 @@ export default async function ToolLandingPage({ params }: { params: Promise<{ sl
           }),
         ]}
       />
-      <PageHero eyebrow="Tool Page" title={page.headline} description={page.intro} />
+      <PageHero eyebrow={page.indexable ? "Tool Page" : "Legacy Topic"} title={page.headline} description={page.intro} />
       <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 pb-6">
         <Breadcrumbs
           items={[
@@ -104,13 +97,19 @@ export default async function ToolLandingPage({ params }: { params: Promise<{ sl
       <ContentSections sections={page.sections} />
       <FAQSection items={page.faqs} />
       <ContentAd minHeight={250} />
-      <RelatedLinks title="Related downloader pages" links={relatedToolLinks} />
-      <RelatedLinks title="Related Threads guides" links={relatedGuideLinks} />
+      <RelatedLinks
+        title="Maintained Threads guides"
+        links={relatedGuideLinks.length ? relatedGuideLinks : indexableGuidePages.map((guide) => ({
+          title: guide.title,
+          description: guide.description,
+          href: `/guides/${guide.slug}`,
+        }))}
+      />
       <section className="w-full py-16 bg-muted/20">
         <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8">
-          <h2 className="text-3xl font-bold text-foreground">More Threads media topics</h2>
+          <h2 className="text-3xl font-bold text-foreground">Maintained support pages</h2>
           <div className="mt-6 grid gap-4 md:grid-cols-2 xl:grid-cols-3">
-            {guidePages.slice(0, 3).map((guide) => (
+            {indexableGuidePages.map((guide) => (
               <a
                 key={guide.slug}
                 href={`/guides/${guide.slug}`}
